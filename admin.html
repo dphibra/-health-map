@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>لوحة التحكم — الخريطة الصحية التفاعلية</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=IBM+Plex+Sans+Arabic:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#122023; --teal-900:#0B3D3F; --teal-700:#0F5257; --teal-500:#1B7A80;
+    --sand:#F6F3EC; --paper:#FFFFFF; --amber:#D98E36; --green:#3E8E5B; --red:#C4553B;
+    --line:#E4DFD3; --muted:#6B7674;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:'IBM Plex Sans Arabic',sans-serif;background:var(--sand);color:var(--ink)}
+  h1,h2,h3{font-family:'Cairo',sans-serif}
+  header{background:var(--teal-900);color:#fff;padding:18px 26px}
+  header h1{margin:0;font-size:20px;font-weight:800}
+  header p{margin:2px 0 0;color:#CFE6E5;font-size:13px}
+
+  .wrap{max-width:1200px;margin:0 auto;padding:22px 20px 60px}
+
+  .banner{background:#FBEBD3;border:1px solid #E9C27E;color:#7A4E10;padding:12px 16px;border-radius:10px;font-size:13.5px;margin-bottom:18px;display:none}
+  .banner.show{display:block}
+
+  .card{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:20px;margin-bottom:18px}
+
+  #loginCard{max-width:380px;margin:60px auto}
+  #loginCard input{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:8px;margin-bottom:10px;font-family:inherit}
+  #loginCard button{width:100%}
+
+  button{font-family:inherit;background:var(--teal-700);color:#fff;border:none;padding:9px 16px;border-radius:8px;font-size:13.5px;cursor:pointer;font-weight:600}
+  button:hover{background:var(--teal-900)}
+  button.ghost{background:transparent;color:var(--teal-700);border:1px solid var(--teal-700)}
+  button.danger{background:#fff;color:var(--red);border:1px solid var(--red)}
+  button.small{padding:5px 10px;font-size:12.5px}
+
+  .toolbar{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:14px}
+  .toolbar .filters{display:flex;gap:8px;flex-wrap:wrap}
+  .toolbar select, .toolbar input{padding:8px 10px;border:1px solid var(--line);border-radius:8px;font-family:inherit;font-size:13px}
+
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  th,td{padding:9px 10px;border-bottom:1px solid var(--line);text-align:right;vertical-align:middle}
+  th{background:var(--sand);font-weight:700;color:var(--teal-900);position:sticky;top:0}
+  tr:hover td{background:#FAFBF9}
+  .flag{color:var(--amber);font-weight:700;font-size:12px}
+  .pill{font-size:11px;padding:2px 8px;border-radius:20px;font-weight:600}
+  .pill.active{background:#E1F0E5;color:var(--green)}
+  .pill.expired{background:#F6E3DC;color:var(--red)}
+  .switch{position:relative;display:inline-block;width:38px;height:21px}
+  .switch input{opacity:0;width:0;height:0}
+  .slider{position:absolute;cursor:pointer;inset:0;background:#ccc;border-radius:20px;transition:.2s}
+  .slider:before{content:"";position:absolute;height:15px;width:15px;left:3px;bottom:3px;background:#fff;border-radius:50%;transition:.2s}
+  input:checked + .slider{background:var(--teal-500)}
+  input:checked + .slider:before{transform:translateX(-17px)}
+
+  .modal-bg{display:none;position:fixed;inset:0;background:rgba(11,61,63,.45);z-index:1000;align-items:center;justify-content:center}
+  .modal-bg.show{display:flex}
+  .modal{background:#fff;border-radius:14px;padding:22px;width:92%;max-width:520px;max-height:88vh;overflow-y:auto}
+  .modal h3{margin-top:0}
+  .field{margin-bottom:12px}
+  .field label{display:block;font-size:12.5px;color:var(--muted);margin-bottom:4px;font-weight:600}
+  .field input, .field select, .field textarea{width:100%;padding:9px 10px;border:1px solid var(--line);border-radius:8px;font-family:inherit;font-size:13.5px}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .modal-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:16px}
+
+  #appArea{display:none}
+  .stat-row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px}
+  .stat{background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:12px 18px;flex:1;min-width:140px}
+  .stat b{display:block;font-size:22px;color:var(--teal-900);font-family:'Cairo',sans-serif}
+  .stat span{font-size:12px;color:var(--muted)}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>لوحة تحكم الخريطة الصحية التفاعلية</h1>
+  <p>إدارة بيانات المؤسسات — إظهار/إخفاء، تعديل المواقع، إضافة سجلات جديدة</p>
+</header>
+
+<div class="wrap">
+
+  <div id="configBanner" class="banner">
+    ⚠️ لم يتم ربط Firebase بعد. عدّل ملف <code>firebase-config.js</code> بمعلومات مشروعك أولاً — راجع README.
+  </div>
+
+  <div id="loginCard" class="card">
+    <h3>تسجيل الدخول</h3>
+    <input id="email" type="email" placeholder="البريد الإلكتروني">
+    <input id="password" type="password" placeholder="كلمة المرور">
+    <button onclick="doLogin()">دخول</button>
+    <p id="loginError" style="color:var(--red);font-size:12.5px;margin-top:8px"></p>
+  </div>
+
+  <div id="appArea">
+    <div class="stat-row">
+      <div class="stat"><b id="statTotal">—</b><span>إجمالي السجلات</span></div>
+      <div class="stat"><b id="statVisible">—</b><span>ظاهرة على الموقع</span></div>
+      <div class="stat"><b id="statReview">—</b><span>مواقع تحتاج مراجعة</span></div>
+      <div class="stat"><b id="statExpired">—</b><span>تراخيص منتهية</span></div>
+    </div>
+
+    <div class="card">
+      <div class="toolbar">
+        <div class="filters">
+          <input id="fSearch" placeholder="🔍 بحث بالاسم">
+          <select id="fWilayat"><option value="">كل الولايات</option></select>
+          <select id="fSector">
+            <option value="">القطاعان</option>
+            <option value="private">خاص</option>
+            <option value="government">حكومي</option>
+          </select>
+          <select id="fReview">
+            <option value="">كل السجلات</option>
+            <option value="review">تحتاج مراجعة موقع فقط</option>
+          </select>
+        </div>
+        <div style="display:flex;gap:8px">
+          <button class="ghost" onclick="runBulkImport()">استيراد أولي من data/institutions.json</button>
+          <button onclick="openModal()">+ إضافة مؤسسة جديدة</button>
+        </div>
+      </div>
+
+      <div style="overflow-x:auto">
+        <table>
+          <thead>
+            <tr>
+              <th>ظاهر</th><th>الاسم</th><th>الولاية</th><th>القطاع</th><th>التصنيف</th><th>الترخيص</th><th>الموقع</th><th></th>
+            </tr>
+          </thead>
+          <tbody id="tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-bg" id="modalBg">
+  <div class="modal">
+    <h3 id="modalTitle">إضافة مؤسسة</h3>
+    <input type="hidden" id="editId">
+    <div class="row2">
+      <div class="field"><label>الاسم (عربي)</label><input id="f_name_ar"></div>
+      <div class="field"><label>Name (English)</label><input id="f_name_en"></div>
+    </div>
+    <div class="row2">
+      <div class="field"><label>الولاية (عربي)</label><input id="f_wilayat_ar"></div>
+      <div class="field"><label>Wilayat (English)</label><input id="f_wilayat_en"></div>
+    </div>
+    <div class="row2">
+      <div class="field">
+        <label>القطاع</label>
+        <select id="f_sector"><option value="private">خاص</option><option value="government">حكومي</option></select>
+      </div>
+      <div class="field">
+        <label>حالة الترخيص</label>
+        <select id="f_expired"><option value="false">ساري</option><option value="true">منتهي</option></select>
+      </div>
+    </div>
+    <div class="row2">
+      <div class="field"><label>التصنيف العام (Category)</label><input id="f_category" placeholder="مثال: Clinic / Center / Polyclinic"></div>
+      <div class="field"><label>نوع الخدمة (Sub Category / التخصص)</label><input id="f_sub_category" placeholder="مثال: Dental General Clinic"></div>
+    </div>
+    <div class="row2">
+      <div class="field"><label>خط العرض Latitude</label><input id="f_lat" type="number" step="any"></div>
+      <div class="field"><label>خط الطول Longitude</label><input id="f_lng" type="number" step="any"></div>
+    </div>
+    <div class="row2">
+      <div class="field"><label>الهاتف</label><input id="f_phone"></div>
+      <div class="field"><label>البريد الإلكتروني</label><input id="f_email"></div>
+    </div>
+    <div class="row2">
+      <div class="field"><label>أيام العمل</label><input id="f_working_days" placeholder="السبت - الخميس"></div>
+      <div class="field"><label>ساعات العمل</label><input id="f_working_hours" placeholder="8:00 ص - 8:00 م"></div>
+    </div>
+    <div class="field"><label>ملاحظات</label><textarea id="f_notes" rows="2"></textarea></div>
+    <div class="field">
+      <label><input type="checkbox" id="f_visible" style="width:auto;display:inline-block;margin-inline-end:6px" checked> ظاهر على الموقع العام</label>
+    </div>
+    <div class="modal-actions">
+      <button class="ghost" onclick="closeModal()">إلغاء</button>
+      <button onclick="saveRecord()">حفظ</button>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+import { firebaseConfig, FIREBASE_CONFIGURED } from './firebase-config.js';
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
+import {
+  getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut
+} from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
+import {
+  getFirestore, collection, getDocs, doc, setDoc, updateDoc, deleteDoc, addDoc
+} from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+
+let app, auth, db;
+let allData = [];
+
+if (FIREBASE_CONFIGURED){
+  app = initializeApp(firebaseConfig);
+  auth = getAuth(app);
+  db = getFirestore(app);
+} else {
+  document.getElementById('configBanner').classList.add('show');
+}
+
+window.doLogin = async function(){
+  if (!FIREBASE_CONFIGURED){ alert('اربط Firebase أولاً من firebase-config.js'); return; }
+  const email = document.getElementById('email').value;
+  const password = document.getElementById('password').value;
+  try{
+    await signInWithEmailAndPassword(auth, email, password);
+  }catch(e){
+    document.getElementById('loginError').textContent = 'بيانات الدخول غير صحيحة أو الحساب غير مفعّل في Firebase Authentication.';
+  }
+}
+
+if (FIREBASE_CONFIGURED){
+  onAuthStateChanged(auth, user => {
+    if (user){
+      document.getElementById('loginCard').style.display = 'none';
+      document.getElementById('appArea').style.display = 'block';
+      refreshData();
+    } else {
+      document.getElementById('loginCard').style.display = 'block';
+      document.getElementById('appArea').style.display = 'none';
+    }
+  });
+}
+
+async function refreshData(){
+  const snap = await getDocs(collection(db, 'institutions'));
+  allData = snap.docs.map(d => ({ _docId: d.id, ...d.data() }));
+  populateFilters();
+  renderTable();
+  renderStats();
+}
+
+function populateFilters(){
+  const sel = document.getElementById('fWilayat');
+  const current = sel.value;
+  sel.innerHTML = '<option value="">كل الولايات</option>' +
+    [...new Set(allData.map(d => d.wilayat_ar || d.wilayat_en))].filter(Boolean).sort()
+      .map(w => `<option value="${w}">${w}</option>`).join('');
+  sel.value = current;
+}
+
+function renderStats(){
+  document.getElementById('statTotal').textContent = allData.length;
+  document.getElementById('statVisible').textContent = allData.filter(d=>d.visible!==false).length;
+  document.getElementById('statReview').textContent = allData.filter(d=>d.needs_location_review).length;
+  document.getElementById('statExpired').textContent = allData.filter(d=>d.expired).length;
+}
+
+function filteredData(){
+  const q = document.getElementById('fSearch').value.trim().toLowerCase();
+  const w = document.getElementById('fWilayat').value;
+  const sec = document.getElementById('fSector').value;
+  const rev = document.getElementById('fReview').value;
+  return allData.filter(d=>{
+    if (q && !(d.name_ar||'').includes(q) && !(d.name_en||'').toLowerCase().includes(q)) return false;
+    if (w && d.wilayat_ar !== w && d.wilayat_en !== w) return false;
+    if (sec && (d.sector||'private') !== sec) return false;
+    if (rev === 'review' && !d.needs_location_review) return false;
+    return true;
+  });
+}
+
+function renderTable(){
+  const rows = filteredData();
+  document.getElementById('tbody').innerHTML = rows.map(d => `
+    <tr>
+      <td>
+        <label class="switch">
+          <input type="checkbox" ${d.visible!==false?'checked':''} onchange="toggleVisible('${d._docId}', this.checked)">
+          <span class="slider"></span>
+        </label>
+      </td>
+      <td>${d.name_ar || d.name_en || '—'}</td>
+      <td>${d.wilayat_ar || d.wilayat_en || '—'}</td>
+      <td>${d.sector === 'government' ? 'حكومي' : 'خاص'}</td>
+      <td>${d.sub_category || d.category || '—'}</td>
+      <td><span class="pill ${d.expired?'expired':'active'}">${d.expired?'منتهي':'ساري'}</span></td>
+      <td>${d.needs_location_review ? '<span class="flag">⚠ يحتاج مراجعة</span>' : '✓ محدد'}</td>
+      <td style="white-space:nowrap">
+        <button class="small ghost" onclick="editRecord('${d._docId}')">تعديل</button>
+        <button class="small danger" onclick="removeRecord('${d._docId}')">حذف</button>
+      </td>
+    </tr>
+  `).join('') || '<tr><td colspan="8" style="text-align:center;color:#6B7674;padding:20px">لا توجد سجلات مطابقة</td></tr>';
+}
+
+window.toggleVisible = async function(id, val){
+  await updateDoc(doc(db, 'institutions', id), { visible: val });
+  const rec = allData.find(d=>d._docId===id); if(rec) rec.visible = val;
+  renderStats();
+}
+
+window.removeRecord = async function(id){
+  if(!confirm('تأكيد حذف هذا السجل نهائياً؟')) return;
+  await deleteDoc(doc(db, 'institutions', id));
+  await refreshData();
+}
+
+window.openModal = function(){
+  document.getElementById('modalTitle').textContent = 'إضافة مؤسسة جديدة';
+  document.getElementById('editId').value = '';
+  ['name_ar','name_en','wilayat_ar','wilayat_en','category','sub_category','lat','lng','phone','email','working_days','working_hours','notes']
+    .forEach(f => document.getElementById('f_'+f).value = '');
+  document.getElementById('f_sector').value = 'private';
+  document.getElementById('f_expired').value = 'false';
+  document.getElementById('f_visible').checked = true;
+  document.getElementById('modalBg').classList.add('show');
+}
+
+window.editRecord = function(id){
+  const d = allData.find(x=>x._docId===id);
+  if(!d) return;
+  document.getElementById('modalTitle').textContent = 'تعديل بيانات المؤسسة';
+  document.getElementById('editId').value = id;
+  document.getElementById('f_name_ar').value = d.name_ar||'';
+  document.getElementById('f_name_en').value = d.name_en||'';
+  document.getElementById('f_wilayat_ar').value = d.wilayat_ar||'';
+  document.getElementById('f_wilayat_en').value = d.wilayat_en||'';
+  document.getElementById('f_sector').value = d.sector||'private';
+  document.getElementById('f_expired').value = d.expired ? 'true':'false';
+  document.getElementById('f_category').value = d.category||'';
+  document.getElementById('f_sub_category').value = d.sub_category||'';
+  document.getElementById('f_lat').value = d.lat||'';
+  document.getElementById('f_lng').value = d.lng||'';
+  document.getElementById('f_phone').value = d.phone||'';
+  document.getElementById('f_email').value = d.email||'';
+  document.getElementById('f_working_days').value = d.working_days||'';
+  document.getElementById('f_working_hours').value = d.working_hours||'';
+  document.getElementById('f_notes').value = d.notes||'';
+  document.getElementById('f_visible').checked = d.visible !== false;
+  document.getElementById('modalBg').classList.add('show');
+}
+
+window.closeModal = function(){ document.getElementById('modalBg').classList.remove('show'); }
+
+window.saveRecord = async function(){
+  const id = document.getElementById('editId').value;
+  const payload = {
+    name_ar: document.getElementById('f_name_ar').value,
+    name_en: document.getElementById('f_name_en').value,
+    wilayat_ar: document.getElementById('f_wilayat_ar').value,
+    wilayat_en: document.getElementById('f_wilayat_en').value,
+    sector: document.getElementById('f_sector').value,
+    expired: document.getElementById('f_expired').value === 'true',
+    category: document.getElementById('f_category').value,
+    sub_category: document.getElementById('f_sub_category').value,
+    lat: parseFloat(document.getElementById('f_lat').value) || 0,
+    lng: parseFloat(document.getElementById('f_lng').value) || 0,
+    phone: document.getElementById('f_phone').value,
+    email: document.getElementById('f_email').value,
+    working_days: document.getElementById('f_working_days').value,
+    working_hours: document.getElementById('f_working_hours').value,
+    notes: document.getElementById('f_notes').value,
+    visible: document.getElementById('f_visible').checked,
+    needs_location_review: false
+  };
+  if (id){
+    await updateDoc(doc(db, 'institutions', id), payload);
+  } else {
+    await addDoc(collection(db, 'institutions'), payload);
+  }
+  closeModal();
+  await refreshData();
+}
+
+window.runBulkImport = async function(){
+  if(!confirm('سيتم استيراد كل سجلات data/institutions.json كسجلات جديدة في قاعدة البيانات. تنفذ هذي الخطوة مرة واحدة فقط عادة. متابعة؟')) return;
+  const res = await fetch('data/institutions.json');
+  const items = await res.json();
+  for (const item of items){
+    const { id, ...rest } = item;
+    await setDoc(doc(db, 'institutions', id), rest);
+  }
+  alert(`تم استيراد ${items.length} سجل بنجاح.`);
+  await refreshData();
+}
+
+['fSearch','fWilayat','fSector','fReview'].forEach(id=>{
+  document.getElementById(id).addEventListener('input', renderTable);
+  document.getElementById(id).addEventListener('change', renderTable);
+});
+</script>
+</body>
+</html>
