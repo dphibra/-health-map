@@ -129,7 +129,7 @@ let allData = [];
 let map, infoWindow, mapMarkers = [];
 
 function loadLocalData(){
-  return fetch('data/institutions.json').then(r => r.json());
+  return fetch('institutions.json').then(r => r.json());
 }
 
 async function loadFirestoreData(){

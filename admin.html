@@ -116,7 +116,7 @@
           </select>
         </div>
         <div style="display:flex;gap:8px">
-          <button class="ghost" onclick="runBulkImport()">استيراد أولي من data/institutions.json</button>
+          <button class="ghost" onclick="runBulkImport()">استيراد أولي من institutions.json</button>
           <button onclick="openModal()">+ إضافة مؤسسة جديدة</button>
         </div>
       </div>
@@ -371,8 +371,8 @@ window.saveRecord = async function(){
 }
 
 window.runBulkImport = async function(){
-  if(!confirm('سيتم استيراد كل سجلات data/institutions.json كسجلات جديدة في قاعدة البيانات. تنفذ هذي الخطوة مرة واحدة فقط عادة. متابعة؟')) return;
-  const res = await fetch('data/institutions.json');
+  if(!confirm('سيتم استيراد كل سجلات institutions.json كسجلات جديدة في قاعدة البيانات. تنفذ هذي الخطوة مرة واحدة فقط عادة. متابعة؟')) return;
+  const res = await fetch('institutions.json');
   const items = await res.json();
   for (const item of items){
     const { id, ...rest } = item;
