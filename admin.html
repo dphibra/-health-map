@@ -380,7 +380,7 @@ window.runBulkImport = async function(){
   }
   alert(`تم استيراد ${items.length} سجل بنجاح.`);
   await refreshData();
-}
+};
 
 ['fSearch','fWilayat','fSector','fReview'].forEach(id=>{
   document.getElementById(id).addEventListener('input', renderTable);
