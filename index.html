@@ -6,7 +6,7 @@
 <title>Interactive Health Map — North Al Sharqiyah Governorate</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Cairo:wght@400;600;700;800&family=IBM+Plex+Sans+Arabic:wght@400;500&display=swap" rel="stylesheet">
 <style>
   :root{
     --ink:#122023;
@@ -23,13 +23,25 @@
   }
   *{box-sizing:border-box}
   body{margin:0;font-family:'Inter',sans-serif;background:var(--sand);color:var(--ink);-webkit-text-size-adjust:100%}
-  h1,h2,h3,.display{font-family:'Inter',sans-serif}
+  body.lang-ar{font-family:'IBM Plex Sans Arabic',sans-serif}
+  h1,h2,h3{font-family:'Inter',sans-serif}
+  body.lang-ar h1, body.lang-ar h2, body.lang-ar h3{font-family:'Cairo',sans-serif}
 
-  header{background:var(--teal-900);color:#fff;padding:20px 24px 18px}
-  header .eyebrow{font-size:11.5px;letter-spacing:.03em;color:#9FCFCE;font-weight:600;line-height:1.6;display:block}
-  header h1{margin:6px 0 4px;font-size:24px;font-weight:800;line-height:1.25}
+  header{background:var(--teal-900);color:#fff;padding:18px 24px 18px}
+  .header-top{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap}
+  .header-brand{display:flex;align-items:center;gap:14px}
+  .header-brand img.logo{height:46px;width:auto;background:#fff;border-radius:8px;padding:5px;flex-shrink:0}
+  .eyebrow{font-size:11.5px;letter-spacing:.02em;color:#9FCFCE;font-weight:600;line-height:1.6;display:block}
+  header h1{margin:6px 0 4px;font-size:23px;font-weight:800;line-height:1.25}
   header p{margin:0;color:#CFE6E5;font-size:13.5px;line-height:1.6}
   .badge-soon{display:inline-block;margin-inline-start:8px;background:var(--amber);color:#3A2200;font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px;vertical-align:middle;white-space:nowrap}
+  .lang-btn{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.35);color:#fff;padding:8px 16px;border-radius:20px;font-size:13px;cursor:pointer;white-space:nowrap;font-weight:700;font-family:inherit}
+  .lang-btn:hover{background:rgba(255,255,255,.26)}
+
+  #categoryLegend{display:flex;gap:8px;overflow-x:auto;padding:10px 16px;background:var(--paper);border-bottom:1px solid var(--line);-webkit-overflow-scrolling:touch}
+  .cat-pill{display:inline-flex;align-items:center;gap:6px;border:1.5px solid;border-radius:20px;padding:3px 10px 3px 3px;font-size:11.5px;color:var(--ink);background:#fff;white-space:nowrap;flex-shrink:0}
+  body.lang-ar .cat-pill{padding:3px 3px 3px 10px}
+  .cat-dot{width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0}
 
   .filters{display:flex;flex-wrap:wrap;gap:10px;padding:12px 16px;background:var(--paper);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:500}
   .filters select, .filters input{
@@ -40,7 +52,7 @@
 
   .layout{display:grid;grid-template-columns:1.5fr 1fr;gap:0;align-items:stretch}
   #map{height:70vh;width:100%}
-  .panel{border-left:1px solid var(--line);background:var(--paper);height:70vh;overflow-y:auto;padding:14px;-webkit-overflow-scrolling:touch}
+  .panel{border-inline-start:1px solid var(--line);background:var(--paper);height:70vh;overflow-y:auto;padding:14px;-webkit-overflow-scrolling:touch}
   .panel h3{font-size:14px;margin:0 0 10px;color:var(--teal-900)}
   .inst-card{border:1px solid var(--line);border-radius:10px;padding:12px;margin-bottom:10px;cursor:pointer;transition:.15s}
   .inst-card:hover, .inst-card:active{border-color:var(--teal-500);background:#F0F7F6}
@@ -51,6 +63,10 @@
   .tag.exp{background:#B5AFA1}
   .empty-note{color:var(--muted);font-size:13px;padding:20px;text-align:center}
 
+  .pin-shape{width:30px;height:30px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);display:flex;align-items:center;justify-content:center;box-shadow:0 2px 4px rgba(0,0,0,.35);border:2px solid #fff}
+  .pin-emoji{transform:rotate(45deg);font-size:14px;line-height:1}
+  .leaflet-div-icon{background:transparent!important;border:none!important}
+
   section.matrix{padding:22px 16px 40px}
   section.matrix h2{font-size:18px;margin:0 0 4px}
   section.matrix p.sub{color:var(--muted);font-size:13px;margin:0 0 14px;line-height:1.6}
@@ -58,7 +74,7 @@
   table.cov{border-collapse:collapse;width:100%;font-size:13px;min-width:680px}
   table.cov th, table.cov td{padding:10px 12px;text-align:center;border-bottom:1px solid var(--line);white-space:nowrap}
   table.cov th{background:var(--teal-900);color:#fff;font-weight:600;position:sticky;top:0}
-  table.cov td:first-child, table.cov th:first-child{text-align:left;position:sticky;left:0;background:var(--sand);font-weight:600;z-index:2}
+  table.cov td:first-child, table.cov th:first-child{text-align:start;position:sticky;inset-inline-start:0;background:var(--sand);font-weight:600;z-index:2}
   table.cov th:first-child{background:var(--teal-900);z-index:3}
   .cell{display:inline-flex;align-items:center;justify-content:center;min-width:32px;height:26px;border-radius:6px;font-weight:700;font-size:12.5px}
   .cell.gap{background:#F6E3DC;color:var(--red)}
@@ -74,6 +90,7 @@
   @media (min-width:640px){
     header{padding:22px 28px 20px}
     header h1{font-size:26px}
+    #categoryLegend{padding:10px 28px}
     .filters{padding:14px 28px}
     .panel{padding:16px}
     section.matrix{padding:26px 28px 40px}
@@ -83,57 +100,63 @@
   @media (max-width:880px){
     .layout{grid-template-columns:1fr}
     #map{height:48vh}
-    .panel{height:38vh;border-left:none;border-top:1px solid var(--line)}
+    .panel{height:38vh;border-inline-start:none;border-top:1px solid var(--line)}
   }
 
   @media (max-width:480px){
     .filters select, .filters input{flex:1 1 100%;min-width:0}
     .stat-pill{flex:1 1 100%;justify-content:center}
+    .header-brand img.logo{height:38px}
+    header h1{font-size:19px}
   }
 </style>
 </head>
 <body>
 
 <header>
-  <span class="eyebrow">Ministry of Health — Directorate General of Health Services, North Al Sharqiyah Governorate<br>Directorate of Planning &amp; Health Regulation — Private Health Institutions Department</span>
-  <h1>Interactive Health Map of Private Health Institutions</h1>
-  <p>Geographic distribution, service classification, and private healthcare sector gap analysis by wilayat <span class="badge-soon">Public sector data coming soon</span></p>
+  <div class="header-top">
+    <div class="header-brand">
+      <img class="logo" src="moh-logo.png" alt="Ministry of Health logo">
+      <span class="eyebrow" id="eyebrowText"></span>
+    </div>
+    <button class="lang-btn" id="langToggle" onclick="toggleLang()">العربية</button>
+  </div>
+  <h1 id="titleText"></h1>
+  <p><span id="subtitleText"></span><span class="badge-soon" id="badgeText"></span></p>
 </header>
 
+<div id="categoryLegend"></div>
+
 <div class="filters">
-  <input id="searchBox" type="text" placeholder="🔍 Search by institution name...">
-  <select id="wilayatFilter"><option value="">All Wilayats</option></select>
-  <select id="categoryFilter"><option value="">All Categories</option></select>
-  <select id="statusFilter">
-    <option value="">All Statuses</option>
-    <option value="active">Active licenses only</option>
-    <option value="expired">Expired licenses only</option>
-  </select>
-  <span class="stat-pill" id="countPill">— institutions</span>
+  <input id="searchBox" type="text">
+  <select id="wilayatFilter"></select>
+  <select id="categoryFilter"></select>
+  <select id="statusFilter"></select>
+  <span class="stat-pill" id="countPill">—</span>
 </div>
 
 <div class="layout">
   <div id="map"></div>
   <div class="panel">
-    <h3>Displayed Institutions</h3>
+    <h3 id="panelTitleText"></h3>
     <div id="cardList"></div>
   </div>
 </div>
 
 <section class="matrix">
-  <h2>Service Coverage Matrix by Wilayat</h2>
-  <p class="sub">Number of active private institutions by service type and wilayat — red cells indicate a complete service gap (potential investment opportunity)</p>
+  <h2 id="matrixTitleText"></h2>
+  <p class="sub" id="matrixSubText"></p>
   <div class="matrix-scroll">
     <table class="cov" id="covTable"></table>
   </div>
   <div class="legend">
-    <span><span class="dot" style="background:#F6E3DC"></span> No coverage (gap)</span>
-    <span><span class="dot" style="background:#FBEBD3"></span> Limited coverage (1-2)</span>
-    <span><span class="dot" style="background:#E1F0E5"></span> Good coverage (3+)</span>
+    <span><span class="dot" style="background:#F6E3DC"></span><span id="legendGapText"></span></span>
+    <span><span class="dot" style="background:#FBEBD3"></span><span id="legendLowText"></span></span>
+    <span><span class="dot" style="background:#E1F0E5"></span><span id="legendOkText"></span></span>
   </div>
 </section>
 
-<footer id="footerNote">Loading data...</footer>
+<footer id="footerNote"></footer>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script type="module">
@@ -141,7 +164,111 @@ import { firebaseConfig, FIREBASE_CONFIGURED } from './firebase-config.js';
 
 let allData = [];
 let map, markersLayer;
+let currentLang = localStorage.getItem('healthmap_lang') || 'en';
 
+// ---------- Translation dictionary ----------
+const T = {
+  en: {
+    eyebrow: 'Ministry of Health — Directorate General of Health Services, North Al Sharqiyah Governorate<br>Directorate of Planning &amp; Health Regulation — Private Health Institutions Department',
+    title: 'Interactive Health Map of Private Health Institutions',
+    subtitle: 'Geographic distribution, service classification, and private healthcare sector by wilayat',
+    badge: 'Public sector data coming soon',
+    searchPlaceholder: '🔍 Search by institution name...',
+    allWilayats: 'All Wilayats',
+    allCategories: 'All Categories',
+    allStatuses: 'All Statuses',
+    activeOnly: 'Active licenses only',
+    expiredOnly: 'Expired licenses only',
+    institutionsShown: n => `${n} institutions shown`,
+    panelTitle: 'Displayed Institutions',
+    noResults: 'No matching results',
+    matrixTitle: 'Service Coverage Matrix by Wilayat',
+    matrixSub: 'Number of active private institutions by service type and wilayat — red cells indicate a complete service gap (potential investment opportunity)',
+    serviceType: 'Service Type',
+    legendGap: 'No coverage (gap)',
+    legendLow: 'Limited coverage (1-2)',
+    legendOk: 'Good coverage (3+)',
+    licenseActive: 'License active',
+    licenseExpired: 'License expired',
+    approxLocation: '⚠ Approximate location — pending review',
+    approxLocationShort: '⚠ Approximate location',
+    footerLive: 'Data source: live database (Firestore)',
+    footerLocal: 'Currently running on local sample data — Firebase not yet connected',
+    footerLoaded: 'Page last loaded: ',
+    langBtn: 'العربية',
+    unnamed: 'Unnamed'
+  },
+  ar: {
+    eyebrow: 'وزارة الصحة — المديرية العامة للخدمات الصحية بمحافظة شمال الشرقية<br>دائرة التخطيط والتنظيم الصحي — قسم المؤسسات الصحية الخاصة',
+    title: 'الخريطة الصحية التفاعلية للمؤسسات الصحية الخاصة',
+    subtitle: 'التوزيع الجغرافي وتصنيف الخدمات للقطاع الصحي الخاص حسب الولاية',
+    badge: 'بيانات القطاع الحكومي قريباً',
+    searchPlaceholder: '🔍 ابحث باسم المؤسسة...',
+    allWilayats: 'كل الولايات',
+    allCategories: 'كل التصنيفات',
+    allStatuses: 'كل الحالات',
+    activeOnly: 'سارية فقط',
+    expiredOnly: 'منتهية فقط',
+    institutionsShown: n => `${n} مؤسسة معروضة`,
+    panelTitle: 'المؤسسات المعروضة',
+    noResults: 'لا توجد نتائج مطابقة',
+    matrixTitle: 'مصفوفة تغطية الخدمات حسب الولاية',
+    matrixSub: 'عدد المؤسسات الخاصة السارية حسب نوع الخدمة والولاية — الخلايا الحمراء تشير إلى غياب كامل للخدمة (فرصة استثمارية محتملة)',
+    serviceType: 'نوع الخدمة',
+    legendGap: 'لا يوجد (فجوة)',
+    legendLow: 'تغطية محدودة (1-2)',
+    legendOk: 'تغطية جيدة (3+)',
+    licenseActive: 'ترخيص ساري',
+    licenseExpired: 'ترخيص منتهي',
+    approxLocation: '⚠ الموقع تقريبي بانتظار المراجعة',
+    approxLocationShort: '⚠ موقع تقريبي',
+    footerLive: 'البيانات مصدرها قاعدة البيانات الحية (Firestore)',
+    footerLocal: 'يعمل حالياً على بيانات تجريبية محلية — لم يتم ربط Firebase بعد',
+    footerLoaded: 'آخر تحديث للصفحة: ',
+    langBtn: 'English',
+    unnamed: 'غير مسمى'
+  }
+};
+
+// ---------- Category → icon/color mapping ----------
+const CATEGORY_STYLES = [
+  { test: s => s.includes('dental'), emoji: '🦷', color: '#2E86AB', en: 'Dental', ar: 'أسنان' },
+  { test: s => s.includes('optical') || s.includes('eye'), emoji: '👓', color: '#6B4FA0', en: 'Optical / Eye', ar: 'بصريات وعيون' },
+  { test: s => s.includes('women') || s.includes('gynae') || s.includes('gyneco') || s.includes('obstetric') || s.includes('maternity'), emoji: '🤰', color: '#D6558C', en: 'Women & Maternity', ar: 'نساء وولادة' },
+  { test: s => s.includes('pediatric') || s.includes('paediatric') || s.includes('child'), emoji: '🧒', color: '#E08E2B', en: 'Pediatrics', ar: 'أطفال' },
+  { test: s => s.includes('skin') || s.includes('derma'), emoji: '🧴', color: '#8A6D3B', en: 'Dermatology', ar: 'جلدية' },
+  { test: s => s.includes('physio'), emoji: '🏃', color: '#3E8E5B', en: 'Physiotherapy', ar: 'علاج طبيعي' },
+  { test: s => s.includes('lab') || s.includes('diagnos') || s.includes('radiol') || s.includes('x-ray') || s.includes('scan'), emoji: '🧪', color: '#4B7BA6', en: 'Diagnostics / Lab', ar: 'مختبر وتشخيص' },
+  { test: s => s.includes('pharmac'), emoji: '💊', color: '#C4553B', en: 'Pharmacy', ar: 'صيدلية' },
+  { test: s => s.includes('polyclinic') || s.includes('center') || s.includes('centre') || s.includes('complex'), emoji: '🏥', color: '#0B3D3F', en: 'Polyclinic / Center', ar: 'مجمع صحي' },
+];
+const DEFAULT_STYLE = { emoji: '➕', color: '#1B7A80', en: 'General Clinic', ar: 'عيادة عامة' };
+
+function getCategoryStyle(d){
+  const s = ((d.sub_category||'') + ' ' + (d.category||'')).toLowerCase();
+  return CATEGORY_STYLES.find(c => c.test(s)) || DEFAULT_STYLE;
+}
+
+function makeIcon(style, expired){
+  return L.divIcon({
+    className: '',
+    html: `<div class="pin-shape" style="background:${style.color};opacity:${expired?0.45:1}"><span class="pin-emoji">${style.emoji}</span></div>`,
+    iconSize: [30,30],
+    iconAnchor: [15,30],
+    popupAnchor: [0,-30]
+  });
+}
+
+function buildCategoryLegend(){
+  const wrap = document.getElementById('categoryLegend');
+  const all = CATEGORY_STYLES.concat([DEFAULT_STYLE]);
+  wrap.innerHTML = all.map(c => `
+    <span class="cat-pill" style="border-color:${c.color}">
+      <span class="cat-dot" style="background:${c.color}">${c.emoji}</span>${currentLang==='ar'?c.ar:c.en}
+    </span>`).join('');
+}
+
+// ---------- Map ----------
 function initMap(){
   map = L.map('map', {scrollWheelZoom:true, tap:true}).setView([22.62, 58.55], 10);
 
@@ -152,9 +279,9 @@ function initMap(){
     attribution:'Tiles &copy; Esri — Source: Esri, Maxar, Earthstar Geographics'
   });
 
-  satellite.addTo(map); // satellite view is the default
+  satellite.addTo(map);
   L.control.layers(
-    { 'Satellite': satellite, 'Streets': streets },
+    { '🛰️ Satellite': satellite, '🗺️ Streets': streets },
     {}, { position: 'topleft', collapsed: false }
   ).addTo(map);
 
@@ -174,16 +301,26 @@ async function loadFirestoreData(){
   return snap.docs.map(d => ({ id: d.id, ...d.data() }));
 }
 
-function displayName(d){ return d.name_en || d.name_ar || 'Unnamed'; }
-function displayWilayat(d){ return d.wilayat_en || d.wilayat_ar || ''; }
+function displayName(d){
+  const t = T[currentLang];
+  return currentLang === 'ar' ? (d.name_ar || d.name_en || t.unnamed) : (d.name_en || d.name_ar || t.unnamed);
+}
+function displayWilayat(d){
+  return currentLang === 'ar' ? (d.wilayat_ar || d.wilayat_en || '') : (d.wilayat_en || d.wilayat_ar || '');
+}
 
 function populateFilters(data){
+  const t = T[currentLang];
   const wilayats = [...new Set(data.map(displayWilayat))].filter(Boolean).sort();
   const cats = [...new Set(data.map(d => d.category))].filter(Boolean).sort();
+
   const wSel = document.getElementById('wilayatFilter');
   const cSel = document.getElementById('categoryFilter');
-  wilayats.forEach(w => wSel.insertAdjacentHTML('beforeend', `<option value="${w}">${w}</option>`));
-  cats.forEach(c => cSel.insertAdjacentHTML('beforeend', `<option value="${c}">${c}</option>`));
+  const sSel = document.getElementById('statusFilter');
+
+  wSel.innerHTML = `<option value="">${t.allWilayats}</option>` + wilayats.map(w => `<option value="${w}">${w}</option>`).join('');
+  cSel.innerHTML = `<option value="">${t.allCategories}</option>` + cats.map(c => `<option value="${c}">${c}</option>`).join('');
+  sSel.innerHTML = `<option value="">${t.allStatuses}</option><option value="active">${t.activeOnly}</option><option value="expired">${t.expiredOnly}</option>`;
 }
 
 function applyFilters(){
@@ -204,25 +341,24 @@ function applyFilters(){
 }
 
 function render(){
+  const t = T[currentLang];
   const filtered = applyFilters();
-  document.getElementById('countPill').textContent = `${filtered.length} institutions shown`;
+  document.getElementById('countPill').textContent = t.institutionsShown(filtered.length);
 
   markersLayer.clearLayers();
   const cardList = document.getElementById('cardList');
-  cardList.innerHTML = filtered.length ? '' : '<div class="empty-note">No matching results</div>';
+  cardList.innerHTML = filtered.length ? '' : `<div class="empty-note">${t.noResults}</div>`;
 
   filtered.forEach(d => {
-    const color = d.expired ? '#B5AFA1' : '#0F5257';
-    const marker = L.circleMarker([d.lat, d.lng], {
-      radius: 7, color: color, fillColor: color, fillOpacity: d.expired ? 0.35 : 0.85, weight: 1.5
-    }).bindPopup(`
-      <div style="font-family:'Inter',sans-serif;min-width:200px">
+    const style = getCategoryStyle(d);
+    const marker = L.marker([d.lat, d.lng], { icon: makeIcon(style, d.expired) }).bindPopup(`
+      <div style="font-family:inherit;min-width:200px">
         <b>${displayName(d)}</b><br>
-        <span style="color:#555;font-size:12.5px">${d.sub_category || d.category}</span><br>
+        <span style="color:#555;font-size:12.5px">${style[currentLang]} — ${d.sub_category || d.category}</span><br>
         <span style="font-size:12.5px">📍 ${displayWilayat(d)}</span><br>
         ${d.phone ? `<span style="font-size:12.5px">📞 ${d.phone}</span><br>`:''}
-        <span style="font-size:11.5px;color:${d.expired ? '#C4553B':'#3E8E5B'}">${d.expired ? 'License expired' : 'License active'}</span>
-        ${d.needs_location_review ? '<br><span style="font-size:11px;color:#D98E36">⚠ Approximate location — pending review</span>' : ''}
+        <span style="font-size:11.5px;color:${d.expired ? '#C4553B':'#3E8E5B'}">${d.expired ? t.licenseExpired : t.licenseActive}</span>
+        ${d.needs_location_review ? `<br><span style="font-size:11px;color:#D98E36">${t.approxLocation}</span>` : ''}
       </div>
     `);
     marker.addTo(markersLayer);
@@ -232,9 +368,9 @@ function render(){
     card.innerHTML = `
       <div class="inst-name">${displayName(d)}</div>
       <div class="inst-meta">
-        <span class="tag ${d.expired?'exp':''}">${d.category}</span>${displayWilayat(d)}<br>
+        <span class="tag ${d.expired?'exp':''}" style="background:${style.color}">${style.emoji} ${style[currentLang]}</span>${displayWilayat(d)}<br>
         ${d.sub_category || ''}
-        ${d.needs_location_review ? '<br><span class="review-flag">⚠ Approximate location</span>' : ''}
+        ${d.needs_location_review ? `<br><span class="review-flag">${t.approxLocationShort}</span>` : ''}
       </div>`;
     card.onclick = () => { map.setView([d.lat, d.lng], 14); marker.openPopup(); };
     cardList.appendChild(card);
@@ -242,12 +378,13 @@ function render(){
 }
 
 function buildMatrix(){
+  const t = T[currentLang];
   const active = allData.filter(d => d.visible !== false && !d.expired);
   const wilayats = [...new Set(active.map(displayWilayat))].filter(Boolean).sort();
   const subcats = [...new Set(active.map(d => d.sub_category))].filter(Boolean).sort();
 
   const table = document.getElementById('covTable');
-  let thead = '<tr><th>Service Type</th>' + wilayats.map(w => `<th>${w}</th>`).join('') + '</tr>';
+  let thead = `<tr><th>${t.serviceType}</th>` + wilayats.map(w => `<th>${w}</th>`).join('') + '</tr>';
   let rows = subcats.map(sc => {
     const cells = wilayats.map(w => {
       const count = active.filter(d => d.sub_category === sc && displayWilayat(d) === w).length;
@@ -259,7 +396,50 @@ function buildMatrix(){
   table.innerHTML = thead + rows;
 }
 
+function applyStaticText(){
+  const t = T[currentLang];
+  document.getElementById('eyebrowText').innerHTML = t.eyebrow;
+  document.getElementById('titleText').textContent = t.title;
+  document.getElementById('subtitleText').textContent = t.subtitle + ' ';
+  document.getElementById('badgeText').textContent = t.badge;
+  document.getElementById('searchBox').placeholder = t.searchPlaceholder;
+  document.getElementById('panelTitleText').textContent = t.panelTitle;
+  document.getElementById('matrixTitleText').textContent = t.matrixTitle;
+  document.getElementById('matrixSubText').textContent = t.matrixSub;
+  document.getElementById('legendGapText').textContent = t.legendGap;
+  document.getElementById('legendLowText').textContent = t.legendLow;
+  document.getElementById('legendOkText').textContent = t.legendOk;
+  document.getElementById('langToggle').textContent = t.langBtn;
+}
+
+window.toggleLang = function(){
+  currentLang = currentLang === 'en' ? 'ar' : 'en';
+  localStorage.setItem('healthmap_lang', currentLang);
+  document.documentElement.lang = currentLang;
+  document.documentElement.dir = currentLang === 'ar' ? 'rtl' : 'ltr';
+  document.body.classList.toggle('lang-ar', currentLang === 'ar');
+  applyStaticText();
+  buildCategoryLegend();
+  populateFilters(allData);
+  buildMatrix();
+  render();
+  updateFooter();
+}
+
+function updateFooter(){
+  const t = T[currentLang];
+  document.getElementById('footerNote').textContent =
+    (FIREBASE_CONFIGURED ? t.footerLive : t.footerLocal) + ' · ' + t.footerLoaded +
+    new Date().toLocaleDateString(currentLang === 'ar' ? 'ar-OM' : 'en-GB');
+}
+
 async function boot(){
+  document.documentElement.lang = currentLang;
+  document.documentElement.dir = currentLang === 'ar' ? 'rtl' : 'ltr';
+  document.body.classList.toggle('lang-ar', currentLang === 'ar');
+  applyStaticText();
+  buildCategoryLegend();
+
   initMap();
   try{
     allData = FIREBASE_CONFIGURED ? await loadFirestoreData() : await loadLocalData();
@@ -270,10 +450,7 @@ async function boot(){
   populateFilters(allData);
   buildMatrix();
   render();
-
-  document.getElementById('footerNote').textContent =
-    (FIREBASE_CONFIGURED ? 'Data source: live database (Firestore)' : 'Currently running on local sample data — Firebase not yet connected')
-    + ' · Page last loaded: ' + new Date().toLocaleDateString('en-GB');
+  updateFooter();
 
   ['searchBox','wilayatFilter','categoryFilter','statusFilter'].forEach(id=>{
     document.getElementById(id).addEventListener('input', render);
