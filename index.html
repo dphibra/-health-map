@@ -65,6 +65,8 @@
 
   .pin-shape{width:30px;height:30px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);display:flex;align-items:center;justify-content:center;box-shadow:0 2px 4px rgba(0,0,0,.35);border:2px solid #fff}
   .pin-emoji{transform:rotate(45deg);font-size:14px;line-height:1}
+  .gov-badge{width:28px;height:28px;background:#8B1E2E;border:2px solid #fff;border-radius:6px;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 4px rgba(0,0,0,.35)}
+  .gov-emoji{font-size:14px}
   .leaflet-div-icon{background:transparent!important;border:none!important}
 
   section.matrix{padding:22px 16px 40px}
@@ -163,8 +165,52 @@
 import { firebaseConfig, FIREBASE_CONFIGURED } from './firebase-config.js';
 
 let allData = [];
+let govData = [];
 let map, markersLayer;
 let currentLang = localStorage.getItem('healthmap_lang') || 'en';
+let _dbPromise = null;
+
+async function getDb(){
+  if (!_dbPromise){
+    _dbPromise = (async () => {
+      const { initializeApp } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js');
+      const { getFirestore } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js');
+      const app = initializeApp(firebaseConfig);
+      return getFirestore(app);
+    })();
+  }
+  return _dbPromise;
+}
+
+async function loadFirestoreCollection(name){
+  const { collection, getDocs } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js');
+  const db = await getDb();
+  const snap = await getDocs(collection(db, name));
+  return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+}
+
+// كل عيادة داخل clinics[] تتحول إلى نقطة مستقلة على الخريطة؛
+// المؤسسات القديمة بدون clinics تستخدم category/sub_category كخدمة وحيدة (توافق مع البيانات المستوردة)
+function flattenPrivate(data){
+  const out = [];
+  data.forEach(d => {
+    if (Array.isArray(d.clinics) && d.clinics.length){
+      d.clinics.forEach((c, i) => {
+        out.push({
+          ...d,
+          _clinicIndex: i,
+          _clinicCount: d.clinics.length,
+          sub_category: c.specialty || d.sub_category,
+          working_days: c.working_days || d.working_days,
+          working_hours: c.working_hours || d.working_hours
+        });
+      });
+    } else {
+      out.push({ ...d, _clinicIndex: 0, _clinicCount: 1 });
+    }
+  });
+  return out;
+}
 
 // ---------- Translation dictionary ----------
 const T = {
@@ -196,7 +242,8 @@ const T = {
     footerLocal: 'Currently running on local sample data — Firebase not yet connected',
     footerLoaded: 'Page last loaded: ',
     langBtn: 'العربية',
-    unnamed: 'Unnamed'
+    unnamed: 'Unnamed',
+    govLabel: 'Government Institution'
   },
   ar: {
     eyebrow: 'وزارة الصحة — المديرية العامة للخدمات الصحية بمحافظة شمال الشرقية<br>دائرة التخطيط والتنظيم الصحي — قسم المؤسسات الصحية الخاصة',
@@ -226,7 +273,8 @@ const T = {
     footerLocal: 'يعمل حالياً على بيانات تجريبية محلية — لم يتم ربط Firebase بعد',
     footerLoaded: 'آخر تحديث للصفحة: ',
     langBtn: 'English',
-    unnamed: 'غير مسمى'
+    unnamed: 'غير مسمى',
+    govLabel: 'مؤسسة حكومية'
   }
 };
 
@@ -259,13 +307,26 @@ function makeIcon(style, expired){
   });
 }
 
+function makeGovIcon(){
+  return L.divIcon({
+    className: '',
+    html: `<div class="gov-badge"><span class="gov-emoji">🏛️</span></div>`,
+    iconSize: [28,28],
+    iconAnchor: [14,14],
+    popupAnchor: [0,-14]
+  });
+}
+
 function buildCategoryLegend(){
   const wrap = document.getElementById('categoryLegend');
   const all = CATEGORY_STYLES.concat([DEFAULT_STYLE]);
   wrap.innerHTML = all.map(c => `
     <span class="cat-pill" style="border-color:${c.color}">
       <span class="cat-dot" style="background:${c.color}">${c.emoji}</span>${currentLang==='ar'?c.ar:c.en}
-    </span>`).join('');
+    </span>`).join('') + `
+    <span class="cat-pill" style="border-color:#8B1E2E">
+      <span class="cat-dot" style="background:#8B1E2E">🏛️</span>${T[currentLang].govLabel}
+    </span>`;
 }
 
 // ---------- Map ----------
@@ -290,15 +351,6 @@ function initMap(){
 
 function loadLocalData(){
   return fetch('institutions.json').then(r => r.json());
-}
-
-async function loadFirestoreData(){
-  const { initializeApp } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js');
-  const { getFirestore, collection, getDocs } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js');
-  const app = initializeApp(firebaseConfig);
-  const db = getFirestore(app);
-  const snap = await getDocs(collection(db, 'institutions'));
-  return snap.docs.map(d => ({ id: d.id, ...d.data() }));
 }
 
 function displayName(d){
@@ -351,11 +403,19 @@ function render(){
 
   filtered.forEach(d => {
     const style = getCategoryStyle(d);
-    const marker = L.marker([d.lat, d.lng], { icon: makeIcon(style, d.expired) }).bindPopup(`
+    let lat = d.lat, lng = d.lng;
+    if (d._clinicCount > 1){
+      const angle = (2 * Math.PI / d._clinicCount) * d._clinicIndex;
+      const r = 0.0006; // فصل بصري بسيط بين عيادات نفس المؤسسة
+      lat += r * Math.sin(angle);
+      lng += r * Math.cos(angle);
+    }
+    const marker = L.marker([lat, lng], { icon: makeIcon(style, d.expired) }).bindPopup(`
       <div style="font-family:inherit;min-width:200px">
         <b>${displayName(d)}</b><br>
         <span style="color:#555;font-size:12.5px">${style[currentLang]} — ${d.sub_category || d.category}</span><br>
         <span style="font-size:12.5px">📍 ${displayWilayat(d)}</span><br>
+        ${d.working_hours ? `<span style="font-size:12px;color:#555">🕒 ${d.working_days||''} ${d.working_hours}</span><br>` : ''}
         ${d.phone ? `<span style="font-size:12.5px">📞 ${d.phone}</span><br>`:''}
         <span style="font-size:11.5px;color:${d.expired ? '#C4553B':'#3E8E5B'}">${d.expired ? t.licenseExpired : t.licenseActive}</span>
         ${d.needs_location_review ? `<br><span style="font-size:11px;color:#D98E36">${t.approxLocation}</span>` : ''}
@@ -372,8 +432,24 @@ function render(){
         ${d.sub_category || ''}
         ${d.needs_location_review ? `<br><span class="review-flag">${t.approxLocationShort}</span>` : ''}
       </div>`;
-    card.onclick = () => { map.setView([d.lat, d.lng], 14); marker.openPopup(); };
+    card.onclick = () => { map.setView([lat, lng], 14); marker.openPopup(); };
     cardList.appendChild(card);
+  });
+
+  // مؤسسات القطاع الحكومي — تظهر دائماً بشكل منفصل بأيقونة مميزة
+  govData.forEach(g => {
+    if (g.visible === false || !g.lat || !g.lng) return;
+    const gName = currentLang === 'ar' ? (g.name_ar || g.name_en) : (g.name_en || g.name_ar);
+    const gWilayat = currentLang === 'ar' ? (g.wilayat_ar || g.wilayat_en) : (g.wilayat_en || g.wilayat_ar);
+    const marker = L.marker([g.lat, g.lng], { icon: makeGovIcon() }).bindPopup(`
+      <div style="font-family:inherit;min-width:200px">
+        <b>${gName || t.unnamed}</b><br>
+        <span style="color:#555;font-size:12.5px">${t.govLabel} — ${g.category||''}</span><br>
+        <span style="font-size:12.5px">📍 ${gWilayat||''}</span>
+        ${g.opd_total ? `<br><span style="font-size:12px;color:#555">OPD 2025: ${g.opd_total}</span>`:''}
+      </div>
+    `);
+    marker.addTo(markersLayer);
   });
 }
 
@@ -442,10 +518,16 @@ async function boot(){
 
   initMap();
   try{
-    allData = FIREBASE_CONFIGURED ? await loadFirestoreData() : await loadLocalData();
+    const raw = FIREBASE_CONFIGURED ? await loadFirestoreCollection('institutions') : await loadLocalData();
+    allData = flattenPrivate(raw);
   }catch(e){
     console.error(e);
-    allData = await loadLocalData();
+    allData = flattenPrivate(await loadLocalData());
+  }
+  try{
+    govData = FIREBASE_CONFIGURED ? await loadFirestoreCollection('gov_institutions') : [];
+  }catch(e){
+    govData = [];
   }
   populateFilters(allData);
   buildMatrix();
