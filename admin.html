@@ -422,7 +422,7 @@ window.toggleMapSize = function(){
   modalBox.classList.toggle('wide', !enlarged);
   document.getElementById('enlargeBtn').textContent = enlarged ? '🔍 تكبير الخريطة' : '🔽 تصغير الخريطة';
   setTimeout(() => pickerMap && pickerMap.invalidateSize(), 220);
-}
+};
 
 ['f_lat','f_lng'].forEach(id=>{
   document.getElementById(id).addEventListener('change', () => {
@@ -623,7 +623,7 @@ window.exportToExcel = function(){
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, isGov ? 'Government' : 'Private');
   XLSX.writeFile(wb, (isGov ? 'government_institutions' : 'private_institutions') + '_export.xlsx');
-}
+};
 
 ['fSearch','fWilayat','fReview'].forEach(id=>{
   document.getElementById(id).addEventListener('input', renderTable);
