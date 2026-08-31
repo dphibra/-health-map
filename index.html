@@ -1,12 +1,12 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="en" dir="ltr">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>الخريطة الصحية التفاعلية — محافظة شمال الشرقية</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+<title>Interactive Health Map — North Al Sharqiyah Governorate</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=IBM+Plex+Sans+Arabic:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
   :root{
     --ink:#122023;
@@ -22,28 +22,28 @@
     --muted:#6B7674;
   }
   *{box-sizing:border-box}
-  body{margin:0;font-family:'IBM Plex Sans Arabic',sans-serif;background:var(--sand);color:var(--ink)}
-  h1,h2,h3,.display{font-family:'Cairo',sans-serif}
+  body{margin:0;font-family:'Inter',sans-serif;background:var(--sand);color:var(--ink);-webkit-text-size-adjust:100%}
+  h1,h2,h3,.display{font-family:'Inter',sans-serif}
 
-  header{background:var(--teal-900);color:#fff;padding:22px 28px 20px}
-  header .eyebrow{font-size:12px;letter-spacing:.08em;color:#9FCFCE;font-weight:600;text-transform:uppercase}
-  header h1{margin:4px 0 4px;font-size:26px;font-weight:800}
-  header p{margin:0;color:#CFE6E5;font-size:14px}
-  .badge-soon{display:inline-block;margin-inline-start:8px;background:var(--amber);color:#3A2200;font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px;vertical-align:middle}
+  header{background:var(--teal-900);color:#fff;padding:20px 24px 18px}
+  header .eyebrow{font-size:11.5px;letter-spacing:.03em;color:#9FCFCE;font-weight:600;line-height:1.6;display:block}
+  header h1{margin:6px 0 4px;font-size:24px;font-weight:800;line-height:1.25}
+  header p{margin:0;color:#CFE6E5;font-size:13.5px;line-height:1.6}
+  .badge-soon{display:inline-block;margin-inline-start:8px;background:var(--amber);color:#3A2200;font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px;vertical-align:middle;white-space:nowrap}
 
-  .filters{display:flex;flex-wrap:wrap;gap:10px;padding:14px 28px;background:var(--paper);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:500}
+  .filters{display:flex;flex-wrap:wrap;gap:10px;padding:12px 16px;background:var(--paper);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:500}
   .filters select, .filters input{
-    font-family:inherit;padding:9px 12px;border:1px solid var(--line);border-radius:8px;background:#fff;font-size:14px;color:var(--ink);min-width:150px
+    font-family:inherit;padding:10px 12px;border:1px solid var(--line);border-radius:8px;background:#fff;font-size:14px;color:var(--ink);min-width:140px;flex:1 1 140px
   }
-  .filters input{flex:1;min-width:200px}
-  .stat-pill{background:var(--sand);border:1px solid var(--line);border-radius:8px;padding:8px 14px;font-size:13px;color:var(--teal-900);font-weight:600;white-space:nowrap}
+  .filters input{flex:2 1 200px}
+  .stat-pill{background:var(--sand);border:1px solid var(--line);border-radius:8px;padding:9px 14px;font-size:13px;color:var(--teal-900);font-weight:600;white-space:nowrap;display:flex;align-items:center}
 
   .layout{display:grid;grid-template-columns:1.5fr 1fr;gap:0;align-items:stretch}
   #map{height:70vh;width:100%}
-  .panel{border-inline-start:1px solid var(--line);background:var(--paper);height:70vh;overflow-y:auto;padding:16px}
-  .panel h3{font-size:15px;margin:0 0 10px;color:var(--teal-900)}
+  .panel{border-left:1px solid var(--line);background:var(--paper);height:70vh;overflow-y:auto;padding:14px;-webkit-overflow-scrolling:touch}
+  .panel h3{font-size:14px;margin:0 0 10px;color:var(--teal-900)}
   .inst-card{border:1px solid var(--line);border-radius:10px;padding:12px;margin-bottom:10px;cursor:pointer;transition:.15s}
-  .inst-card:hover{border-color:var(--teal-500);background:#F0F7F6}
+  .inst-card:hover, .inst-card:active{border-color:var(--teal-500);background:#F0F7F6}
   .inst-card.expired{opacity:.55}
   .inst-name{font-weight:700;font-size:14px;margin-bottom:2px}
   .inst-meta{font-size:12px;color:var(--muted);line-height:1.6}
@@ -51,16 +51,16 @@
   .tag.exp{background:#B5AFA1}
   .empty-note{color:var(--muted);font-size:13px;padding:20px;text-align:center}
 
-  section.matrix{padding:26px 28px 40px}
-  section.matrix h2{font-size:19px;margin:0 0 4px}
-  section.matrix p.sub{color:var(--muted);font-size:13.5px;margin:0 0 16px}
-  .matrix-scroll{overflow-x:auto;border:1px solid var(--line);border-radius:10px;background:var(--paper)}
-  table.cov{border-collapse:collapse;width:100%;font-size:13px;min-width:720px}
+  section.matrix{padding:22px 16px 40px}
+  section.matrix h2{font-size:18px;margin:0 0 4px}
+  section.matrix p.sub{color:var(--muted);font-size:13px;margin:0 0 14px;line-height:1.6}
+  .matrix-scroll{overflow-x:auto;border:1px solid var(--line);border-radius:10px;background:var(--paper);-webkit-overflow-scrolling:touch}
+  table.cov{border-collapse:collapse;width:100%;font-size:13px;min-width:680px}
   table.cov th, table.cov td{padding:10px 12px;text-align:center;border-bottom:1px solid var(--line);white-space:nowrap}
   table.cov th{background:var(--teal-900);color:#fff;font-weight:600;position:sticky;top:0}
-  table.cov td:first-child, table.cov th:first-child{text-align:right;position:sticky;right:0;background:var(--sand);font-weight:600;z-index:2}
+  table.cov td:first-child, table.cov th:first-child{text-align:left;position:sticky;left:0;background:var(--sand);font-weight:600;z-index:2}
   table.cov th:first-child{background:var(--teal-900);z-index:3}
-  .cell{display:inline-flex;align-items:center;justify-content:center;min-width:34px;height:26px;border-radius:6px;font-weight:700;font-size:12.5px}
+  .cell{display:inline-flex;align-items:center;justify-content:center;min-width:32px;height:26px;border-radius:6px;font-weight:700;font-size:12.5px}
   .cell.gap{background:#F6E3DC;color:var(--red)}
   .cell.low{background:#FBEBD3;color:#8A5A12}
   .cell.ok{background:#E1F0E5;color:var(--green)}
@@ -68,58 +68,72 @@
   .legend span{display:inline-flex;align-items:center;gap:6px}
   .dot{width:12px;height:12px;border-radius:3px;display:inline-block}
 
-  footer{padding:16px 28px;color:var(--muted);font-size:12px;border-top:1px solid var(--line)}
+  footer{padding:14px 16px;color:var(--muted);font-size:11.5px;border-top:1px solid var(--line);line-height:1.6}
   .review-flag{color:var(--amber);font-weight:700}
+
+  @media (min-width:640px){
+    header{padding:22px 28px 20px}
+    header h1{font-size:26px}
+    .filters{padding:14px 28px}
+    .panel{padding:16px}
+    section.matrix{padding:26px 28px 40px}
+    footer{padding:16px 28px}
+  }
 
   @media (max-width:880px){
     .layout{grid-template-columns:1fr}
-    #map{height:50vh}
-    .panel{height:40vh;border-inline-start:none;border-top:1px solid var(--line)}
+    #map{height:48vh}
+    .panel{height:38vh;border-left:none;border-top:1px solid var(--line)}
+  }
+
+  @media (max-width:480px){
+    .filters select, .filters input{flex:1 1 100%;min-width:0}
+    .stat-pill{flex:1 1 100%;justify-content:center}
   }
 </style>
 </head>
 <body>
 
 <header>
-  <div class="eyebrow">وزارة الصحة — الإدارة العامة للخدمات الصحية بمحافظة شمال الشرقية</div>
-  <h1>الخريطة الصحية التفاعلية للمؤسسات الصحية الخاصة</h1>
-  <p>توزيع جغرافي، تصنيف الخدمات، وتحليل فجوات القطاع الصحي الخاص حسب الولاية <span class="badge-soon">بيانات القطاع الحكومي قريباً</span></p>
+  <span class="eyebrow">Ministry of Health — Directorate General of Health Services, North Al Sharqiyah Governorate<br>Directorate of Planning &amp; Health Regulation — Private Health Institutions Department</span>
+  <h1>Interactive Health Map of Private Health Institutions</h1>
+  <p>Geographic distribution, service classification, and private healthcare sector gap analysis by wilayat <span class="badge-soon">Public sector data coming soon</span></p>
 </header>
 
 <div class="filters">
-  <input id="searchBox" type="text" placeholder="🔍 ابحث باسم المؤسسة...">
-  <select id="wilayatFilter"><option value="">كل الولايات</option></select>
-  <select id="categoryFilter"><option value="">كل التصنيفات</option></select>
+  <input id="searchBox" type="text" placeholder="🔍 Search by institution name...">
+  <select id="wilayatFilter"><option value="">All Wilayats</option></select>
+  <select id="categoryFilter"><option value="">All Categories</option></select>
   <select id="statusFilter">
-    <option value="">كل الحالات</option>
-    <option value="active">سارية فقط</option>
-    <option value="expired">منتهية فقط</option>
+    <option value="">All Statuses</option>
+    <option value="active">Active licenses only</option>
+    <option value="expired">Expired licenses only</option>
   </select>
-  <span class="stat-pill" id="countPill">— مؤسسة</span>
+  <span class="stat-pill" id="countPill">— institutions</span>
 </div>
 
 <div class="layout">
   <div id="map"></div>
   <div class="panel">
-    <h3>المؤسسات المعروضة</h3>
+    <h3>Displayed Institutions</h3>
     <div id="cardList"></div>
   </div>
 </div>
 
 <section class="matrix">
-  <h2>مصفوفة تغطية الخدمات حسب الولاية</h2>
-  <p class="sub">عدد المؤسسات الخاصة السارية حسب نوع الخدمة والولاية — الخلايا الحمراء تشير إلى غياب كامل للخدمة (فرصة استثمارية محتملة)</p>
+  <h2>Service Coverage Matrix by Wilayat</h2>
+  <p class="sub">Number of active private institutions by service type and wilayat — red cells indicate a complete service gap (potential investment opportunity)</p>
   <div class="matrix-scroll">
     <table class="cov" id="covTable"></table>
   </div>
   <div class="legend">
-    <span><span class="dot" style="background:#F6E3DC"></span> لا يوجد (فجوة)</span>
-    <span><span class="dot" style="background:#FBEBD3"></span> تغطية محدودة (1-2)</span>
-    <span><span class="dot" style="background:#E1F0E5"></span> تغطية جيدة (3+)</span>
+    <span><span class="dot" style="background:#F6E3DC"></span> No coverage (gap)</span>
+    <span><span class="dot" style="background:#FBEBD3"></span> Limited coverage (1-2)</span>
+    <span><span class="dot" style="background:#E1F0E5"></span> Good coverage (3+)</span>
   </div>
 </section>
 
-<footer id="footerNote">جاري تحميل البيانات...</footer>
+<footer id="footerNote">Loading data...</footer>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script type="module">
@@ -129,7 +143,7 @@ let allData = [];
 let map, markersLayer;
 
 function initMap(){
-  map = L.map('map', {scrollWheelZoom:false}).setView([22.62, 58.55], 10);
+  map = L.map('map', {scrollWheelZoom:true, tap:true}).setView([22.62, 58.55], 10);
 
   const streets = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution:'&copy; OpenStreetMap contributors'
@@ -138,9 +152,9 @@ function initMap(){
     attribution:'Tiles &copy; Esri — Source: Esri, Maxar, Earthstar Geographics'
   });
 
-  satellite.addTo(map); // القمر الصناعي هو العرض الافتراضي
+  satellite.addTo(map); // satellite view is the default
   L.control.layers(
-    { 'صور الأقمار الصناعية': satellite, 'خريطة الشوارع': streets },
+    { 'Satellite': satellite, 'Streets': streets },
     {}, { position: 'topleft', collapsed: false }
   ).addTo(map);
 
@@ -160,8 +174,11 @@ async function loadFirestoreData(){
   return snap.docs.map(d => ({ id: d.id, ...d.data() }));
 }
 
+function displayName(d){ return d.name_en || d.name_ar || 'Unnamed'; }
+function displayWilayat(d){ return d.wilayat_en || d.wilayat_ar || ''; }
+
 function populateFilters(data){
-  const wilayats = [...new Set(data.map(d => d.wilayat_ar || d.wilayat_en))].filter(Boolean).sort();
+  const wilayats = [...new Set(data.map(displayWilayat))].filter(Boolean).sort();
   const cats = [...new Set(data.map(d => d.category))].filter(Boolean).sort();
   const wSel = document.getElementById('wilayatFilter');
   const cSel = document.getElementById('categoryFilter');
@@ -177,8 +194,8 @@ function applyFilters(){
 
   return allData.filter(d => {
     if (d.visible === false) return false;
-    if (q && !(d.name_ar||'').includes(q) && !(d.name_en||'').toLowerCase().includes(q)) return false;
-    if (w && (d.wilayat_ar !== w && d.wilayat_en !== w)) return false;
+    if (q && !displayName(d).toLowerCase().includes(q)) return false;
+    if (w && displayWilayat(d) !== w) return false;
     if (c && d.category !== c) return false;
     if (s === 'active' && d.expired) return false;
     if (s === 'expired' && !d.expired) return false;
@@ -188,24 +205,24 @@ function applyFilters(){
 
 function render(){
   const filtered = applyFilters();
-  document.getElementById('countPill').textContent = `${filtered.length} مؤسسة معروضة`;
+  document.getElementById('countPill').textContent = `${filtered.length} institutions shown`;
 
   markersLayer.clearLayers();
   const cardList = document.getElementById('cardList');
-  cardList.innerHTML = filtered.length ? '' : '<div class="empty-note">لا توجد نتائج مطابقة</div>';
+  cardList.innerHTML = filtered.length ? '' : '<div class="empty-note">No matching results</div>';
 
   filtered.forEach(d => {
     const color = d.expired ? '#B5AFA1' : '#0F5257';
     const marker = L.circleMarker([d.lat, d.lng], {
       radius: 7, color: color, fillColor: color, fillOpacity: d.expired ? 0.35 : 0.85, weight: 1.5
     }).bindPopup(`
-      <div style="font-family:'IBM Plex Sans Arabic',sans-serif;min-width:200px">
-        <b>${d.name_ar || d.name_en}</b><br>
+      <div style="font-family:'Inter',sans-serif;min-width:200px">
+        <b>${displayName(d)}</b><br>
         <span style="color:#555;font-size:12.5px">${d.sub_category || d.category}</span><br>
-        <span style="font-size:12.5px">📍 ${d.wilayat_ar || d.wilayat_en}</span><br>
+        <span style="font-size:12.5px">📍 ${displayWilayat(d)}</span><br>
         ${d.phone ? `<span style="font-size:12.5px">📞 ${d.phone}</span><br>`:''}
-        <span style="font-size:11.5px;color:${d.expired ? '#C4553B':'#3E8E5B'}">${d.expired ? 'ترخيص منتهي' : 'ترخيص ساري'}</span>
-        ${d.needs_location_review ? '<br><span style="font-size:11px;color:#D98E36">⚠ الموقع تقريبي بانتظار المراجعة</span>' : ''}
+        <span style="font-size:11.5px;color:${d.expired ? '#C4553B':'#3E8E5B'}">${d.expired ? 'License expired' : 'License active'}</span>
+        ${d.needs_location_review ? '<br><span style="font-size:11px;color:#D98E36">⚠ Approximate location — pending review</span>' : ''}
       </div>
     `);
     marker.addTo(markersLayer);
@@ -213,11 +230,11 @@ function render(){
     const card = document.createElement('div');
     card.className = 'inst-card' + (d.expired ? ' expired' : '');
     card.innerHTML = `
-      <div class="inst-name">${d.name_ar || d.name_en}</div>
+      <div class="inst-name">${displayName(d)}</div>
       <div class="inst-meta">
-        <span class="tag ${d.expired?'exp':''}">${d.category}</span>${d.wilayat_ar || d.wilayat_en}<br>
+        <span class="tag ${d.expired?'exp':''}">${d.category}</span>${displayWilayat(d)}<br>
         ${d.sub_category || ''}
-        ${d.needs_location_review ? '<br><span class="review-flag">⚠ موقع تقريبي</span>' : ''}
+        ${d.needs_location_review ? '<br><span class="review-flag">⚠ Approximate location</span>' : ''}
       </div>`;
     card.onclick = () => { map.setView([d.lat, d.lng], 14); marker.openPopup(); };
     cardList.appendChild(card);
@@ -226,14 +243,14 @@ function render(){
 
 function buildMatrix(){
   const active = allData.filter(d => d.visible !== false && !d.expired);
-  const wilayats = [...new Set(active.map(d => d.wilayat_ar || d.wilayat_en))].sort();
+  const wilayats = [...new Set(active.map(displayWilayat))].filter(Boolean).sort();
   const subcats = [...new Set(active.map(d => d.sub_category))].filter(Boolean).sort();
 
   const table = document.getElementById('covTable');
-  let thead = '<tr><th>نوع الخدمة</th>' + wilayats.map(w => `<th>${w}</th>`).join('') + '</tr>';
+  let thead = '<tr><th>Service Type</th>' + wilayats.map(w => `<th>${w}</th>`).join('') + '</tr>';
   let rows = subcats.map(sc => {
     const cells = wilayats.map(w => {
-      const count = active.filter(d => d.sub_category === sc && (d.wilayat_ar||d.wilayat_en) === w).length;
+      const count = active.filter(d => d.sub_category === sc && displayWilayat(d) === w).length;
       const cls = count === 0 ? 'gap' : (count <= 2 ? 'low' : 'ok');
       return `<td><span class="cell ${cls}">${count}</span></td>`;
     }).join('');
@@ -255,8 +272,8 @@ async function boot(){
   render();
 
   document.getElementById('footerNote').textContent =
-    (FIREBASE_CONFIGURED ? 'البيانات مصدرها قاعدة البيانات الحية (Firestore)' : 'يعمل حالياً على بيانات تجريبية محلية — لم يتم ربط Firebase بعد')
-    + ' · آخر تحديث للصفحة: ' + new Date().toLocaleDateString('ar-OM');
+    (FIREBASE_CONFIGURED ? 'Data source: live database (Firestore)' : 'Currently running on local sample data — Firebase not yet connected')
+    + ' · Page last loaded: ' + new Date().toLocaleDateString('en-GB');
 
   ['searchBox','wilayatFilter','categoryFilter','statusFilter'].forEach(id=>{
     document.getElementById(id).addEventListener('input', render);

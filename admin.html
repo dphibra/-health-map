@@ -70,6 +70,20 @@
   .stat{background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:12px 18px;flex:1;min-width:140px}
   .stat b{display:block;font-size:22px;color:var(--teal-900);font-family:'Cairo',sans-serif}
   .stat span{font-size:12px;color:var(--muted)}
+
+  @media (max-width:640px){
+    .wrap{padding:14px 10px 40px}
+    .toolbar{flex-direction:column;align-items:stretch}
+    .toolbar .filters{flex-direction:column}
+    .toolbar .filters input, .toolbar .filters select{width:100%}
+    .toolbar > div[style*="display:flex"]{flex-direction:column}
+    .toolbar > div[style*="display:flex"] button{width:100%}
+    .stat{min-width:calc(50% - 5px)}
+    table{font-size:12px}
+    th,td{padding:8px 6px}
+    .modal{width:96%;padding:16px}
+    .row2{grid-template-columns:1fr}
+  }
 </style>
 </head>
 <body>
@@ -122,7 +136,7 @@
         </div>
       </div>
 
-      <div style="overflow-x:auto">
+      <div style="overflow-x:auto;-webkit-overflow-scrolling:touch">
         <table>
           <thead>
             <tr>
