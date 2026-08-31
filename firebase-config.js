@@ -13,15 +13,12 @@
 //    وانسخ القيم بالأسفل من الكود اللي يعطيك إياه
 
 export const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_PROJECT_ID.appspot.com",
-  messagingSenderId: "YOUR_SENDER_ID",
-  appId: "YOUR_APP_ID"
+  apiKey: "AIzaSyDTrbOYv89j-uXzYB0wLSkfmstVmKL0DhQ",
+  authDomain: "nsh-health-map.firebaseapp.com",
+  projectId: "nsh-health-map",
+  storageBucket: "nsh-health-map.firebasestorage.app",
+  messagingSenderId: "563554533211",
+  appId: "1:563554533211:web:8ca9ff96450eb01fcce47e"
 };
 
-// يستخدم هذا الملف كعلامة: طالما apiKey ما زال "YOUR_API_KEY"،
-// الموقع يعمل تلقائياً على البيانات المحلية (data/institutions.json)
-// بدل Firestore، عشان تقدر تجرب الموقع فوراً بدون أي إعداد.
 export const FIREBASE_CONFIGURED = firebaseConfig.apiKey !== "YOUR_API_KEY";
