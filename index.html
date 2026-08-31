@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
 <title>Interactive Health Map — North Al Sharqiyah Governorate</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css">
+<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Cairo:wght@400;600;700;800&family=IBM+Plex+Sans+Arabic:wght@400;500&display=swap" rel="stylesheet">
 <style>
@@ -133,7 +135,7 @@
   <input id="searchBox" type="text">
   <select id="wilayatFilter"></select>
   <select id="categoryFilter"></select>
-  <select id="statusFilter"></select>
+  <select id="specialtyFilter"></select>
   <span class="stat-pill" id="countPill">—</span>
 </div>
 
@@ -161,12 +163,13 @@
 <footer id="footerNote"></footer>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
 <script type="module">
 import { firebaseConfig, FIREBASE_CONFIGURED } from './firebase-config.js';
 
 let allData = [];
 let govData = [];
-let map, markersLayer;
+let map, markersLayer, govLayer;
 let currentLang = localStorage.getItem('healthmap_lang') || 'en';
 let _dbPromise = null;
 
@@ -222,9 +225,7 @@ const T = {
     searchPlaceholder: '🔍 Search by institution name...',
     allWilayats: 'All Wilayats',
     allCategories: 'All Categories',
-    allStatuses: 'All Statuses',
-    activeOnly: 'Active licenses only',
-    expiredOnly: 'Expired licenses only',
+    allSpecialties: 'All Institution Types',
     institutionsShown: n => `${n} institutions shown`,
     panelTitle: 'Displayed Institutions',
     noResults: 'No matching results',
@@ -253,9 +254,7 @@ const T = {
     searchPlaceholder: '🔍 ابحث باسم المؤسسة...',
     allWilayats: 'كل الولايات',
     allCategories: 'كل التصنيفات',
-    allStatuses: 'كل الحالات',
-    activeOnly: 'سارية فقط',
-    expiredOnly: 'منتهية فقط',
+    allSpecialties: 'كل أنواع المؤسسات',
     institutionsShown: n => `${n} مؤسسة معروضة`,
     panelTitle: 'المؤسسات المعروضة',
     noResults: 'لا توجد نتائج مطابقة',
@@ -280,17 +279,17 @@ const T = {
 
 // ---------- Category → icon/color mapping ----------
 const CATEGORY_STYLES = [
-  { test: s => s.includes('dental'), emoji: '🦷', color: '#2E86AB', en: 'Dental', ar: 'أسنان' },
-  { test: s => s.includes('optical') || s.includes('eye'), emoji: '👓', color: '#6B4FA0', en: 'Optical / Eye', ar: 'بصريات وعيون' },
-  { test: s => s.includes('women') || s.includes('gynae') || s.includes('gyneco') || s.includes('obstetric') || s.includes('maternity'), emoji: '🤰', color: '#D6558C', en: 'Women & Maternity', ar: 'نساء وولادة' },
-  { test: s => s.includes('pediatric') || s.includes('paediatric') || s.includes('child'), emoji: '🧒', color: '#E08E2B', en: 'Pediatrics', ar: 'أطفال' },
-  { test: s => s.includes('skin') || s.includes('derma'), emoji: '🧴', color: '#8A6D3B', en: 'Dermatology', ar: 'جلدية' },
-  { test: s => s.includes('physio'), emoji: '🏃', color: '#3E8E5B', en: 'Physiotherapy', ar: 'علاج طبيعي' },
-  { test: s => s.includes('lab') || s.includes('diagnos') || s.includes('radiol') || s.includes('x-ray') || s.includes('scan'), emoji: '🧪', color: '#4B7BA6', en: 'Diagnostics / Lab', ar: 'مختبر وتشخيص' },
-  { test: s => s.includes('pharmac'), emoji: '💊', color: '#C4553B', en: 'Pharmacy', ar: 'صيدلية' },
-  { test: s => s.includes('polyclinic') || s.includes('center') || s.includes('centre') || s.includes('complex'), emoji: '🏥', color: '#0B3D3F', en: 'Polyclinic / Center', ar: 'مجمع صحي' },
+  { key:'dental', test: s => s.includes('dental'), emoji: '🦷', color: '#2E86AB', en: 'Dental', ar: 'أسنان' },
+  { key:'optical', test: s => s.includes('optical') || s.includes('eye'), emoji: '👓', color: '#6B4FA0', en: 'Optical / Eye', ar: 'بصريات وعيون' },
+  { key:'women', test: s => s.includes('women') || s.includes('gynae') || s.includes('gyneco') || s.includes('obstetric') || s.includes('maternity'), emoji: '🤰', color: '#D6558C', en: 'Women & Maternity', ar: 'نساء وولادة' },
+  { key:'pediatrics', test: s => s.includes('pediatric') || s.includes('paediatric') || s.includes('child'), emoji: '🧒', color: '#E08E2B', en: 'Pediatrics', ar: 'أطفال' },
+  { key:'dermatology', test: s => s.includes('skin') || s.includes('derma'), emoji: '🧴', color: '#8A6D3B', en: 'Dermatology', ar: 'جلدية' },
+  { key:'physio', test: s => s.includes('physio'), emoji: '🏃', color: '#3E8E5B', en: 'Physiotherapy', ar: 'علاج طبيعي' },
+  { key:'lab', test: s => s.includes('lab') || s.includes('diagnos') || s.includes('radiol') || s.includes('x-ray') || s.includes('scan'), emoji: '🧪', color: '#4B7BA6', en: 'Diagnostics / Lab', ar: 'مختبر وتشخيص' },
+  { key:'pharmacy', test: s => s.includes('pharmac'), emoji: '💊', color: '#C4553B', en: 'Pharmacy', ar: 'صيدلية' },
+  { key:'polyclinic', test: s => s.includes('polyclinic') || s.includes('center') || s.includes('centre') || s.includes('complex'), emoji: '🏥', color: '#0B3D3F', en: 'Polyclinic / Center', ar: 'مجمع صحي' },
 ];
-const DEFAULT_STYLE = { emoji: '➕', color: '#1B7A80', en: 'General Clinic', ar: 'عيادة عامة' };
+const DEFAULT_STYLE = { key:'general', emoji: '➕', color: '#1B7A80', en: 'General Clinic', ar: 'عيادة عامة' };
 
 function getCategoryStyle(d){
   const s = ((d.sub_category||'') + ' ' + (d.category||'')).toLowerCase();
@@ -346,7 +345,10 @@ function initMap(){
     {}, { position: 'topleft', collapsed: false }
   ).addTo(map);
 
-  markersLayer = L.layerGroup().addTo(map);
+  markersLayer = L.markerClusterGroup({ showCoverageOnHover:false, maxClusterRadius:45, spiderfyOnMaxZoom:true });
+  govLayer = L.layerGroup();
+  map.addLayer(markersLayer);
+  map.addLayer(govLayer);
 }
 
 function loadLocalData(){
@@ -368,26 +370,26 @@ function populateFilters(data){
 
   const wSel = document.getElementById('wilayatFilter');
   const cSel = document.getElementById('categoryFilter');
-  const sSel = document.getElementById('statusFilter');
+  const spSel = document.getElementById('specialtyFilter');
 
   wSel.innerHTML = `<option value="">${t.allWilayats}</option>` + wilayats.map(w => `<option value="${w}">${w}</option>`).join('');
   cSel.innerHTML = `<option value="">${t.allCategories}</option>` + cats.map(c => `<option value="${c}">${c}</option>`).join('');
-  sSel.innerHTML = `<option value="">${t.allStatuses}</option><option value="active">${t.activeOnly}</option><option value="expired">${t.expiredOnly}</option>`;
+  spSel.innerHTML = `<option value="">${t.allSpecialties}</option>` +
+    CATEGORY_STYLES.concat([DEFAULT_STYLE]).map(c => `<option value="${c.key}">${c.emoji} ${currentLang==='ar'?c.ar:c.en}</option>`).join('');
 }
 
 function applyFilters(){
   const q = document.getElementById('searchBox').value.trim().toLowerCase();
   const w = document.getElementById('wilayatFilter').value;
   const c = document.getElementById('categoryFilter').value;
-  const s = document.getElementById('statusFilter').value;
+  const sp = document.getElementById('specialtyFilter').value;
 
   return allData.filter(d => {
     if (d.visible === false) return false;
     if (q && !displayName(d).toLowerCase().includes(q)) return false;
     if (w && displayWilayat(d) !== w) return false;
     if (c && d.category !== c) return false;
-    if (s === 'active' && d.expired) return false;
-    if (s === 'expired' && !d.expired) return false;
+    if (sp && getCategoryStyle(d).key !== sp) return false;
     return true;
   });
 }
@@ -398,6 +400,7 @@ function render(){
   document.getElementById('countPill').textContent = t.institutionsShown(filtered.length);
 
   markersLayer.clearLayers();
+  govLayer.clearLayers();
   const cardList = document.getElementById('cardList');
   cardList.innerHTML = filtered.length ? '' : `<div class="empty-note">${t.noResults}</div>`;
 
@@ -449,7 +452,7 @@ function render(){
         ${g.opd_total ? `<br><span style="font-size:12px;color:#555">OPD 2025: ${g.opd_total}</span>`:''}
       </div>
     `);
-    marker.addTo(markersLayer);
+    marker.addTo(govLayer);
   });
 }
 
@@ -534,7 +537,7 @@ async function boot(){
   render();
   updateFooter();
 
-  ['searchBox','wilayatFilter','categoryFilter','statusFilter'].forEach(id=>{
+  ['searchBox','wilayatFilter','categoryFilter','specialtyFilter'].forEach(id=>{
     document.getElementById(id).addEventListener('input', render);
     document.getElementById(id).addEventListener('change', render);
   });
