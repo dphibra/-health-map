@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>الخريطة الصحية التفاعلية — محافظة شمال الشرقية</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=IBM+Plex+Sans+Arabic:wght@400;500&display=swap" rel="stylesheet">
 <style>
@@ -38,8 +39,7 @@
   .stat-pill{background:var(--sand);border:1px solid var(--line);border-radius:8px;padding:8px 14px;font-size:13px;color:var(--teal-900);font-weight:600;white-space:nowrap}
 
   .layout{display:grid;grid-template-columns:1.5fr 1fr;gap:0;align-items:stretch}
-  #map{height:70vh;width:100%;background:var(--sand)}
-  .map-warning{display:flex;align-items:center;justify-content:center;height:70vh;background:var(--sand);color:var(--muted);text-align:center;padding:30px;font-size:14px;line-height:1.9}
+  #map{height:70vh;width:100%}
   .panel{border-inline-start:1px solid var(--line);background:var(--paper);height:70vh;overflow-y:auto;padding:16px}
   .panel h3{font-size:15px;margin:0 0 10px;color:var(--teal-900)}
   .inst-card{border:1px solid var(--line);border-radius:10px;padding:12px;margin-bottom:10px;cursor:pointer;transition:.15s}
@@ -73,7 +73,7 @@
 
   @media (max-width:880px){
     .layout{grid-template-columns:1fr}
-    #map, .map-warning{height:50vh}
+    #map{height:50vh}
     .panel{height:40vh;border-inline-start:none;border-top:1px solid var(--line)}
   }
 </style>
@@ -99,7 +99,7 @@
 </div>
 
 <div class="layout">
-  <div id="mapHost"><div id="map"></div></div>
+  <div id="map"></div>
   <div class="panel">
     <h3>المؤسسات المعروضة</h3>
     <div id="cardList"></div>
@@ -121,12 +121,20 @@
 
 <footer id="footerNote">جاري تحميل البيانات...</footer>
 
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script type="module">
 import { firebaseConfig, FIREBASE_CONFIGURED } from './firebase-config.js';
-import { GOOGLE_MAPS_API_KEY } from './google-maps-config.js';
 
 let allData = [];
-let map, infoWindow, mapMarkers = [];
+let map, markersLayer;
+
+function initMap(){
+  map = L.map('map', {scrollWheelZoom:false}).setView([22.62, 58.55], 10);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution:'&copy; OpenStreetMap contributors'
+  }).addTo(map);
+  markersLayer = L.layerGroup().addTo(map);
+}
 
 function loadLocalData(){
   return fetch('institutions.json').then(r => r.json());
@@ -139,36 +147,6 @@ async function loadFirestoreData(){
   const db = getFirestore(app);
   const snap = await getDocs(collection(db, 'institutions'));
   return snap.docs.map(d => ({ id: d.id, ...d.data() }));
-}
-
-function loadGoogleMapsScript(){
-  return new Promise((resolve, reject) => {
-    if (!GOOGLE_MAPS_API_KEY || GOOGLE_MAPS_API_KEY === 'YOUR_GOOGLE_MAPS_API_KEY'){
-      reject(new Error('NO_KEY'));
-      return;
-    }
-    window.__gmapsReady = () => resolve();
-    const script = document.createElement('script');
-    script.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_API_KEY}&callback=__gmapsReady`;
-    script.onerror = () => reject(new Error('LOAD_FAILED'));
-    document.head.appendChild(script);
-  });
-}
-
-function initMap(){
-  map = new google.maps.Map(document.getElementById('map'), {
-    center: { lat: 22.62, lng: 58.55 },
-    zoom: 10,
-    mapTypeControl: true,
-    streetViewControl: false,
-    fullscreenControl: true
-  });
-  infoWindow = new google.maps.InfoWindow();
-}
-
-function showMapUnavailable(){
-  document.getElementById('mapHost').innerHTML =
-    '<div class="map-warning">⚠️ خرائط جوجل غير مفعّلة بعد.<br>افتح ملف <b>google-maps-config.js</b> وضع مفتاح API صحيح (راجع التعليمات داخل الملف).<br>البيانات والمصفوفة أسفل الصفحة تعمل بشكل طبيعي بدون الخريطة.</div>';
 }
 
 function populateFilters(data){
@@ -197,53 +175,29 @@ function applyFilters(){
   });
 }
 
-function clearMarkers(){
-  mapMarkers.forEach(m => m.setMap(null));
-  mapMarkers = [];
-}
-
 function render(){
   const filtered = applyFilters();
   document.getElementById('countPill').textContent = `${filtered.length} مؤسسة معروضة`;
 
+  markersLayer.clearLayers();
   const cardList = document.getElementById('cardList');
   cardList.innerHTML = filtered.length ? '' : '<div class="empty-note">لا توجد نتائج مطابقة</div>';
 
-  if (map) clearMarkers();
-
   filtered.forEach(d => {
     const color = d.expired ? '#B5AFA1' : '#0F5257';
-
-    if (map){
-      const marker = new google.maps.Marker({
-        position: { lat: d.lat, lng: d.lng },
-        map: map,
-        opacity: d.expired ? 0.5 : 1,
-        icon: {
-          path: google.maps.SymbolPath.CIRCLE,
-          scale: 7,
-          fillColor: color,
-          fillOpacity: 0.9,
-          strokeColor: '#ffffff',
-          strokeWeight: 1.5
-        },
-        title: d.name_ar || d.name_en
-      });
-      marker.addListener('click', () => {
-        infoWindow.setContent(`
-          <div style="font-family:'IBM Plex Sans Arabic',sans-serif;min-width:200px">
-            <b>${d.name_ar || d.name_en}</b><br>
-            <span style="color:#555;font-size:12.5px">${d.sub_category || d.category}</span><br>
-            <span style="font-size:12.5px">📍 ${d.wilayat_ar || d.wilayat_en}</span><br>
-            ${d.phone ? `<span style="font-size:12.5px">📞 ${d.phone}</span><br>`:''}
-            <span style="font-size:11.5px;color:${d.expired ? '#C4553B':'#3E8E5B'}">${d.expired ? 'ترخيص منتهي' : 'ترخيص ساري'}</span>
-            ${d.needs_location_review ? '<br><span style="font-size:11px;color:#D98E36">⚠ الموقع تقريبي بانتظار المراجعة</span>' : ''}
-          </div>
-        `);
-        infoWindow.open(map, marker);
-      });
-      mapMarkers.push(marker);
-    }
+    const marker = L.circleMarker([d.lat, d.lng], {
+      radius: 7, color: color, fillColor: color, fillOpacity: d.expired ? 0.35 : 0.85, weight: 1.5
+    }).bindPopup(`
+      <div style="font-family:'IBM Plex Sans Arabic',sans-serif;min-width:200px">
+        <b>${d.name_ar || d.name_en}</b><br>
+        <span style="color:#555;font-size:12.5px">${d.sub_category || d.category}</span><br>
+        <span style="font-size:12.5px">📍 ${d.wilayat_ar || d.wilayat_en}</span><br>
+        ${d.phone ? `<span style="font-size:12.5px">📞 ${d.phone}</span><br>`:''}
+        <span style="font-size:11.5px;color:${d.expired ? '#C4553B':'#3E8E5B'}">${d.expired ? 'ترخيص منتهي' : 'ترخيص ساري'}</span>
+        ${d.needs_location_review ? '<br><span style="font-size:11px;color:#D98E36">⚠ الموقع تقريبي بانتظار المراجعة</span>' : ''}
+      </div>
+    `);
+    marker.addTo(markersLayer);
 
     const card = document.createElement('div');
     card.className = 'inst-card' + (d.expired ? ' expired' : '');
@@ -254,13 +208,7 @@ function render(){
         ${d.sub_category || ''}
         ${d.needs_location_review ? '<br><span class="review-flag">⚠ موقع تقريبي</span>' : ''}
       </div>`;
-    card.onclick = () => {
-      if (map){
-        map.setCenter({ lat: d.lat, lng: d.lng });
-        map.setZoom(14);
-        google.maps.event.trigger(mapMarkers[filtered.indexOf(d)], 'click');
-      }
-    };
+    card.onclick = () => { map.setView([d.lat, d.lng], 14); marker.openPopup(); };
     cardList.appendChild(card);
   });
 }
@@ -284,14 +232,7 @@ function buildMatrix(){
 }
 
 async function boot(){
-  try{
-    await loadGoogleMapsScript();
-    initMap();
-  }catch(e){
-    console.warn('Google Maps not available:', e.message);
-    showMapUnavailable();
-  }
-
+  initMap();
   try{
     allData = FIREBASE_CONFIGURED ? await loadFirestoreData() : await loadLocalData();
   }catch(e){
