@@ -130,9 +130,20 @@ let map, markersLayer;
 
 function initMap(){
   map = L.map('map', {scrollWheelZoom:false}).setView([22.62, 58.55], 10);
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+
+  const streets = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution:'&copy; OpenStreetMap contributors'
-  }).addTo(map);
+  });
+  const satellite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+    attribution:'Tiles &copy; Esri — Source: Esri, Maxar, Earthstar Geographics'
+  });
+
+  satellite.addTo(map); // القمر الصناعي هو العرض الافتراضي
+  L.control.layers(
+    { 'صور الأقمار الصناعية': satellite, 'خريطة الشوارع': streets },
+    {}, { position: 'topleft', collapsed: false }
+  ).addTo(map);
+
   markersLayer = L.layerGroup().addTo(map);
 }
 

@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>لوحة التحكم — الخريطة الصحية التفاعلية</title>
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=IBM+Plex+Sans+Arabic:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <style>
   :root{
     --ink:#122023; --teal-900:#0B3D3F; --teal-700:#0F5257; --teal-500:#1B7A80;
@@ -165,6 +166,10 @@
       <div class="field"><label>خط العرض Latitude</label><input id="f_lat" type="number" step="any"></div>
       <div class="field"><label>خط الطول Longitude</label><input id="f_lng" type="number" step="any"></div>
     </div>
+    <div class="field">
+      <label>حدّد الموقع على الخريطة (اضغط أو اسحب الدبوس لتحديد الموقع الدقيق)</label>
+      <div id="pickerMap" style="height:220px;border-radius:8px;border:1px solid var(--line)"></div>
+    </div>
     <div class="row2">
       <div class="field"><label>الهاتف</label><input id="f_phone"></div>
       <div class="field"><label>البريد الإلكتروني</label><input id="f_email"></div>
@@ -184,6 +189,7 @@
   </div>
 </div>
 
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script type="module">
 import { firebaseConfig, FIREBASE_CONFIGURED } from './firebase-config.js';
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
@@ -303,6 +309,37 @@ window.removeRecord = async function(id){
   await refreshData();
 }
 
+let pickerMap = null;
+let pickerMarker = null;
+
+function initPickerMap(lat, lng){
+  const startLat = lat || 22.62;
+  const startLng = lng || 58.55;
+
+  if (!pickerMap){
+    pickerMap = L.map('pickerMap').setView([startLat, startLng], lat ? 15 : 10);
+    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+      attribution:'Tiles &copy; Esri'
+    }).addTo(pickerMap);
+    pickerMarker = L.marker([startLat, startLng], { draggable: true }).addTo(pickerMap);
+    pickerMarker.on('dragend', () => {
+      const p = pickerMarker.getLatLng();
+      document.getElementById('f_lat').value = p.lat.toFixed(6);
+      document.getElementById('f_lng').value = p.lng.toFixed(6);
+    });
+    pickerMap.on('click', (e) => {
+      pickerMarker.setLatLng(e.latlng);
+      document.getElementById('f_lat').value = e.latlng.lat.toFixed(6);
+      document.getElementById('f_lng').value = e.latlng.lng.toFixed(6);
+    });
+  } else {
+    pickerMap.setView([startLat, startLng], lat ? 15 : 10);
+    pickerMarker.setLatLng([startLat, startLng]);
+  }
+  // الخريطة داخل نافذة كانت مخفية أثناء الإنشاء، فلازم نصحح حجمها بعد الظهور
+  setTimeout(() => pickerMap.invalidateSize(), 150);
+}
+
 window.openModal = function(){
   document.getElementById('modalTitle').textContent = 'إضافة مؤسسة جديدة';
   document.getElementById('editId').value = '';
@@ -312,6 +349,7 @@ window.openModal = function(){
   document.getElementById('f_expired').value = 'false';
   document.getElementById('f_visible').checked = true;
   document.getElementById('modalBg').classList.add('show');
+  initPickerMap(null, null);
 }
 
 window.editRecord = function(id){
@@ -336,6 +374,7 @@ window.editRecord = function(id){
   document.getElementById('f_notes').value = d.notes||'';
   document.getElementById('f_visible').checked = d.visible !== false;
   document.getElementById('modalBg').classList.add('show');
+  initPickerMap(d.lat, d.lng);
 }
 
 window.closeModal = function(){ document.getElementById('modalBg').classList.remove('show'); }
@@ -381,6 +420,18 @@ window.runBulkImport = async function(){
   alert(`تم استيراد ${items.length} سجل بنجاح.`);
   await refreshData();
 };
+
+['f_lat','f_lng'].forEach(id=>{
+  document.getElementById(id).addEventListener('change', () => {
+    if (!pickerMap) return;
+    const lat = parseFloat(document.getElementById('f_lat').value);
+    const lng = parseFloat(document.getElementById('f_lng').value);
+    if (!isNaN(lat) && !isNaN(lng)){
+      pickerMarker.setLatLng([lat, lng]);
+      pickerMap.setView([lat, lng], 15);
+    }
+  });
+});
 
 ['fSearch','fWilayat','fSector','fReview'].forEach(id=>{
   document.getElementById(id).addEventListener('input', renderTable);
