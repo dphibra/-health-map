@@ -11,127 +11,107 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Cairo:wght@400;600;700;800&family=IBM+Plex+Sans+Arabic:wght@400;500&display=swap" rel="stylesheet">
 <style>
   :root{
-    --ink:#122023;
-    --teal-900:#0B3D3F;
-    --teal-700:#0F5257;
-    --teal-500:#1B7A80;
-    --sand:#F6F3EC;
-    --paper:#FFFFFF;
-    --amber:#D98E36;
-    --green:#3E8E5B;
-    --red:#C4553B;
-    --line:#E4DFD3;
-    --muted:#6B7674;
+    --ink:#122023; --teal-900:#0B3D3F; --teal-700:#0F5257; --teal-500:#1B7A80;
+    --sand:#F6F3EC; --paper:#FFFFFF; --amber:#D98E36; --green:#3E8E5B; --red:#C4553B; --line:#E4DFD3; --muted:#6B7674;
   }
   *{box-sizing:border-box}
-  body{margin:0;font-family:'Inter',sans-serif;background:var(--sand);color:var(--ink);-webkit-text-size-adjust:100%}
+  html,body{height:100%;margin:0}
+  body{font-family:'Inter',sans-serif;background:var(--sand);color:var(--ink);-webkit-text-size-adjust:100%;display:flex;flex-direction:column;overflow:hidden}
   body.lang-ar{font-family:'IBM Plex Sans Arabic',sans-serif}
   h1,h2,h3{font-family:'Inter',sans-serif}
   body.lang-ar h1, body.lang-ar h2, body.lang-ar h3{font-family:'Cairo',sans-serif}
 
-  header{background:var(--teal-900);color:#fff;padding:18px 24px 18px}
-  .header-top{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap}
-  .header-brand{display:flex;align-items:center;gap:14px}
-  .header-brand img.logo{height:46px;width:auto;background:#fff;border-radius:8px;padding:5px;flex-shrink:0}
-  .eyebrow{font-size:11.5px;letter-spacing:.02em;color:#9FCFCE;font-weight:600;line-height:1.6;display:block}
-  header h1{margin:6px 0 4px;font-size:23px;font-weight:800;line-height:1.25}
-  header p{margin:0;color:#CFE6E5;font-size:13.5px;line-height:1.6}
-  .badge-soon{display:inline-block;margin-inline-start:8px;background:var(--amber);color:#3A2200;font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px;vertical-align:middle;white-space:nowrap}
-  .lang-btn{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.35);color:#fff;padding:8px 16px;border-radius:20px;font-size:13px;cursor:pointer;white-space:nowrap;font-weight:700;font-family:inherit}
+  header{background:var(--teal-900);color:#fff;padding:10px 16px;flex:0 0 auto}
+  .header-top{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+  .header-brand{display:flex;align-items:center;gap:10px;min-width:0}
+  .header-brand img.logo{height:34px;width:auto;background:#fff;border-radius:6px;padding:3px;flex-shrink:0}
+  .header-text{min-width:0}
+  .eyebrow{font-size:10.5px;letter-spacing:.02em;color:#9FCFCE;font-weight:600;line-height:1.4;display:block}
+  header h1{margin:2px 0 0;font-size:16px;font-weight:800;line-height:1.25}
+  .lang-btn{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.35);color:#fff;padding:7px 14px;border-radius:20px;font-size:12.5px;cursor:pointer;white-space:nowrap;font-weight:700;font-family:inherit;flex-shrink:0}
   .lang-btn:hover{background:rgba(255,255,255,.26)}
 
-  #categoryLegend{display:flex;gap:8px;overflow-x:auto;padding:10px 16px;background:var(--paper);border-bottom:1px solid var(--line);-webkit-overflow-scrolling:touch}
-  .cat-pill{display:inline-flex;align-items:center;gap:6px;border:1.5px solid;border-radius:20px;padding:3px 10px 3px 3px;font-size:11.5px;color:var(--ink);background:#fff;white-space:nowrap;flex-shrink:0}
-  body.lang-ar .cat-pill{padding:3px 3px 3px 10px}
-  .cat-dot{width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0}
-
-  .filters{display:flex;flex-wrap:wrap;gap:10px;padding:12px 16px;background:var(--paper);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:500}
-  .filters select, .filters input{
-    font-family:inherit;padding:10px 12px;border:1px solid var(--line);border-radius:8px;background:#fff;font-size:14px;color:var(--ink);min-width:140px;flex:1 1 140px
-  }
-  .filters input{flex:2 1 200px}
-  .stat-pill{background:var(--sand);border:1px solid var(--line);border-radius:8px;padding:9px 14px;font-size:13px;color:var(--teal-900);font-weight:600;white-space:nowrap;display:flex;align-items:center}
-
-  .layout{display:grid;grid-template-columns:1.5fr 1fr;gap:0;align-items:stretch;direction:ltr}
-  #map{height:70vh;width:100%;order:1}
-  .panel{background:var(--paper);height:70vh;overflow-y:auto;padding:14px;-webkit-overflow-scrolling:touch;order:2;border-inline-start:1px solid var(--line)}
-  /* الوضع الافتراضي (يطابق العربي): الخريطة يسار، القائمة يمين */
-  /* بالإنجليزي نعكس الترتيب: الخريطة يمين، القائمة يسار */
-  body:not(.lang-ar) #map{order:2}
-  body:not(.lang-ar) .panel{order:1;border-inline-start:none;border-inline-end:1px solid var(--line)}
-  .panel h3{font-size:14px;margin:0 0 10px;color:var(--teal-900)}
-  .inst-card{border:1px solid var(--line);border-radius:10px;padding:12px;margin-bottom:10px;cursor:pointer;transition:.15s}
-  .inst-card:hover, .inst-card:active{border-color:var(--teal-500);background:#F0F7F6}
-  .inst-card.expired{opacity:.55}
-  .inst-name{font-weight:700;font-size:14px;margin-bottom:2px}
-  .inst-meta{font-size:12px;color:var(--muted);line-height:1.6}
-  .tag{display:inline-block;background:var(--teal-500);color:#fff;font-size:10.5px;padding:1px 8px;border-radius:20px;margin-inline-end:4px}
-  .tag.exp{background:#B5AFA1}
-  .empty-note{color:var(--muted);font-size:13px;padding:20px;text-align:center}
+  #mapWrap{flex:1 1 auto;position:relative;min-height:0}
+  #map{position:absolute;inset:0}
 
   .pin-shape{width:34px;height:34px;border-radius:9px;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(0,0,0,.45);border:2.5px solid #fff}
   .pin-emoji{font-size:17px;line-height:1;filter:drop-shadow(0 1px 1px rgba(0,0,0,.25))}
   .gov-badge{width:34px;height:34px;background:#8B1E2E;border:2.5px solid #fff;border-radius:9px;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(0,0,0,.45)}
   .gov-emoji{font-size:17px}
+  .leaflet-div-icon{background:transparent!important;border:none!important}
   .popup-table{border-collapse:collapse;font-size:12.5px;min-width:210px}
   .popup-table td{padding:3px 6px;border-bottom:1px solid #eee;vertical-align:top}
   .popup-table td.pk{color:#7a7a7a;font-weight:600;white-space:nowrap;padding-inline-end:10px}
   .popup-title{font-size:14px;font-weight:800;color:var(--teal-900);padding-bottom:4px;display:block}
-  .leaflet-div-icon{background:transparent!important;border:none!important}
 
-  section.matrix{padding:22px 16px 40px}
-  section.matrix h2{font-size:18px;margin:0 0 4px}
-  section.matrix p.sub{color:var(--muted);font-size:13px;margin:0 0 14px;line-height:1.6}
-  .matrix-scroll{overflow-x:auto;border:1px solid var(--line);border-radius:10px;background:var(--paper);-webkit-overflow-scrolling:touch}
-  table.cov{border-collapse:collapse;width:100%;font-size:13px;min-width:680px}
-  table.cov th, table.cov td{padding:10px 12px;text-align:center;border-bottom:1px solid var(--line);white-space:nowrap}
-  table.cov th{background:var(--teal-900);color:#fff;font-weight:600;position:sticky;top:0}
-  table.cov td:first-child, table.cov th:first-child{text-align:start;position:sticky;inset-inline-start:0;background:var(--sand);font-weight:600;z-index:2}
-  table.cov th:first-child{background:var(--teal-900);z-index:3}
-  .cell{display:inline-flex;align-items:center;justify-content:center;min-width:32px;height:26px;border-radius:6px;font-weight:700;font-size:12.5px}
-  .cell.gap{background:#F6E3DC;color:var(--red)}
-  .cell.low{background:#FBEBD3;color:#8A5A12}
-  .cell.ok{background:#E1F0E5;color:var(--green)}
-  .legend{display:flex;gap:16px;margin-top:10px;font-size:12.5px;color:var(--muted);flex-wrap:wrap}
-  .legend span{display:inline-flex;align-items:center;gap:6px}
-  .dot{width:12px;height:12px;border-radius:3px;display:inline-block}
+  /* ---------- Floating details button + slide-over panel ---------- */
+  .details-fab{position:absolute;bottom:18px;right:16px;z-index:600;background:var(--teal-900);color:#fff;border:none;border-radius:24px;padding:12px 20px;font-weight:700;font-size:14px;box-shadow:0 4px 14px rgba(0,0,0,.35);cursor:pointer;font-family:inherit}
+  .details-fab:hover{background:var(--teal-700)}
 
-  footer{padding:14px 16px;color:var(--muted);font-size:11.5px;border-top:1px solid var(--line);line-height:1.6}
-  .review-flag{color:var(--amber);font-weight:700}
+  .details-panel{position:absolute;top:0;bottom:0;right:0;width:0;overflow:hidden;background:#fff;box-shadow:0 0 20px rgba(0,0,0,.2);transition:width .22s ease;z-index:700;display:flex;flex-direction:column}
+  .details-panel.open{width:min(400px,94vw)}
 
-  .stats-section{display:flex;gap:10px;flex-wrap:wrap;padding:18px 16px 0}
-  .stat-box{flex:1;min-width:130px;background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:14px 16px}
-  .stat-box b{display:block;font-size:26px;color:var(--teal-900);font-family:'Inter',sans-serif}
-  .stat-box span{font-size:12px;color:var(--muted)}
+  .details-head{display:flex;justify-content:space-between;align-items:center;padding:14px 16px;border-bottom:1px solid var(--line);flex:0 0 auto;min-width:380px}
+  .details-head h3{margin:0;font-size:16px;color:var(--teal-900)}
+  .panel-close{background:none;border:none;font-size:22px;cursor:pointer;color:var(--muted);line-height:1;padding:0 4px}
 
-  .bar-row{display:grid;grid-template-columns:130px 1fr 40px;align-items:center;gap:10px;margin-bottom:8px;font-size:12.5px}
+  .details-tabs{display:flex;border-bottom:1px solid var(--line);flex:0 0 auto;min-width:380px}
+  .dtab{flex:1;background:none;border:none;padding:10px 4px;font-size:12px;font-weight:700;color:var(--muted);cursor:pointer;border-bottom:3px solid transparent;font-family:inherit}
+  .dtab.active{color:var(--teal-900);border-bottom-color:var(--teal-900)}
+
+  .details-body{flex:1 1 auto;overflow-y:auto;padding:16px;-webkit-overflow-scrolling:touch;min-width:380px}
+  .tab-pane{display:none}
+  .tab-pane.active{display:block}
+
+  .field-block select, .field-block input{width:100%;margin-bottom:8px;padding:10px 12px;border:1px solid var(--line);border-radius:8px;font-family:inherit;font-size:13.5px;background:#fff}
+
+  #categoryLegend{display:flex;flex-wrap:wrap;gap:6px;padding:10px 0 0}
+  .cat-pill{display:inline-flex;align-items:center;gap:6px;border:1.5px solid;border-radius:20px;padding:3px 10px 3px 3px;font-size:11px;color:var(--ink);background:#fff}
+  body.lang-ar .cat-pill{padding:3px 3px 3px 10px}
+  .cat-dot{width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;flex-shrink:0}
+
+  .stat-pill{background:var(--sand);border:1px solid var(--line);border-radius:8px;padding:8px 12px;font-size:12.5px;color:var(--teal-900);font-weight:600;margin-bottom:10px;display:inline-block}
+  .inst-card{border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-bottom:8px;cursor:pointer;transition:.15s}
+  .inst-card:hover, .inst-card:active{border-color:var(--teal-500);background:#F0F7F6}
+  .inst-card.expired{opacity:.55}
+  .inst-name{font-weight:700;font-size:13.5px;margin-bottom:2px}
+  .inst-meta{font-size:11.5px;color:var(--muted);line-height:1.6}
+  .tag{display:inline-block;color:#fff;font-size:10px;padding:1px 8px;border-radius:20px;margin-inline-end:4px}
+  .empty-note{color:var(--muted);font-size:13px;padding:20px;text-align:center}
+
+  .stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:18px}
+  .stat-box{background:var(--sand);border:1px solid var(--line);border-radius:10px;padding:12px 14px}
+  .stat-box b{display:block;font-size:22px;color:var(--teal-900)}
+  .stat-box span{font-size:11px;color:var(--muted)}
+
+  .bar-row{display:grid;grid-template-columns:90px 1fr 30px;align-items:center;gap:8px;margin-bottom:7px;font-size:11.5px}
   .bar-row .bar-label{color:var(--ink);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .bar-track{background:var(--sand);border-radius:6px;height:14px;overflow:hidden}
+  .bar-track{background:var(--sand);border-radius:6px;height:12px;overflow:hidden}
   .bar-fill{background:var(--teal-500);height:100%;border-radius:6px}
   .bar-row .bar-count{text-align:end;font-weight:700;color:var(--teal-900)}
 
-  @media (min-width:640px){
-    header{padding:22px 28px 20px}
-    header h1{font-size:26px}
-    #categoryLegend{padding:10px 28px}
-    .stats-section{padding:22px 28px 0}
-    .filters{padding:14px 28px}
-    .panel{padding:16px}
-    section.matrix{padding:26px 28px 40px}
-    footer{padding:16px 28px}
-  }
+  .matrix-scroll{overflow-x:auto;border:1px solid var(--line);border-radius:10px;background:var(--paper);-webkit-overflow-scrolling:touch}
+  table.cov{border-collapse:collapse;width:100%;font-size:11.5px;min-width:480px}
+  table.cov th, table.cov td{padding:8px 8px;text-align:center;border-bottom:1px solid var(--line);white-space:nowrap}
+  table.cov th{background:var(--teal-900);color:#fff;font-weight:600;position:sticky;top:0}
+  table.cov td:first-child, table.cov th:first-child{text-align:start;position:sticky;inset-inline-start:0;background:var(--sand);font-weight:600;z-index:2}
+  table.cov th:first-child{background:var(--teal-900);z-index:3}
+  .cell{display:inline-flex;align-items:center;justify-content:center;min-width:28px;height:22px;border-radius:6px;font-weight:700;font-size:11px}
+  .cell.gap{background:#F6E3DC;color:var(--red)}
+  .cell.low{background:#FBEBD3;color:#8A5A12}
+  .cell.ok{background:#E1F0E5;color:var(--green)}
+  .legend{display:flex;gap:12px;margin-top:10px;font-size:11px;color:var(--muted);flex-wrap:wrap}
+  .legend span{display:inline-flex;align-items:center;gap:5px}
+  .dot{width:11px;height:11px;border-radius:3px;display:inline-block}
+  .review-flag{color:var(--amber);font-weight:700}
+  p.sub{color:var(--muted);font-size:12px;margin:0 0 12px;line-height:1.6}
 
-  @media (max-width:880px){
-    .layout{grid-template-columns:1fr}
-    #map{height:48vh;order:1!important}
-    .panel{height:38vh;border-inline-start:none!important;border-inline-end:none!important;border-top:1px solid var(--line);order:2!important}
-  }
+  footer{padding:6px 16px;color:var(--muted);font-size:10.5px;border-top:1px solid var(--line);flex:0 0 auto;background:var(--paper)}
 
   @media (max-width:480px){
-    .filters select, .filters input{flex:1 1 100%;min-width:0}
-    .stat-pill{flex:1 1 100%;justify-content:center}
-    .header-brand img.logo{height:38px}
-    header h1{font-size:19px}
+    .header-brand img.logo{height:28px}
+    header h1{font-size:13.5px}
+    .details-panel.open{width:100vw}
   }
 </style>
 </head>
@@ -141,56 +121,75 @@
   <div class="header-top">
     <div class="header-brand">
       <img class="logo" src="moh-logo.png" alt="Ministry of Health logo">
-      <span class="eyebrow" id="eyebrowText"></span>
+      <div class="header-text">
+        <span class="eyebrow" id="eyebrowText"></span>
+        <h1 id="titleText"></h1>
+      </div>
     </div>
     <button class="lang-btn" id="langToggle" onclick="toggleLang()">العربية</button>
   </div>
-  <h1 id="titleText"></h1>
-  <p><span id="subtitleText"></span><span class="badge-soon" id="badgeText"></span></p>
 </header>
 
-<div id="categoryLegend"></div>
-
-<div class="filters">
-  <input id="searchBox" type="text">
-  <select id="wilayatFilter"></select>
-  <select id="categoryFilter"></select>
-  <select id="specialtyFilter"></select>
-  <span class="stat-pill" id="countPill">—</span>
-</div>
-
-<div class="layout">
+<div id="mapWrap">
   <div id="map"></div>
-  <div class="panel">
-    <h3 id="panelTitleText"></h3>
-    <div id="cardList"></div>
-  </div>
+
+  <button class="details-fab" id="detailsFab" onclick="togglePanel()">☰ <span id="detailsBtnLabel"></span></button>
+
+  <aside class="details-panel" id="detailsPanel">
+    <div class="details-head">
+      <h3 id="detailsHeading"></h3>
+      <button class="panel-close" onclick="closePanel()">×</button>
+    </div>
+    <div class="details-tabs">
+      <button class="dtab active" onclick="switchDTab('map')" id="dtabMapBtn"></button>
+      <button class="dtab" onclick="switchDTab('search')" id="dtabSearchBtn"></button>
+      <button class="dtab" onclick="switchDTab('stats')" id="dtabStatsBtn"></button>
+      <button class="dtab" onclick="switchDTab('data')" id="dtabDataBtn"></button>
+    </div>
+    <div class="details-body">
+
+      <div class="tab-pane active" id="pane-map">
+        <div class="field-block">
+          <select id="wilayatFilter"></select>
+          <select id="categoryFilter"></select>
+          <select id="specialtyFilter"></select>
+        </div>
+        <div id="categoryLegend"></div>
+      </div>
+
+      <div class="tab-pane" id="pane-search">
+        <div class="field-block"><input id="searchBox" type="text"></div>
+        <span class="stat-pill" id="countPill">—</span>
+        <div id="cardList"></div>
+      </div>
+
+      <div class="tab-pane" id="pane-stats">
+        <div class="stats-grid">
+          <div class="stat-box"><b id="statBoxTotal">—</b><span id="statBoxTotalLabel"></span></div>
+          <div class="stat-box"><b id="statBoxWilayats">—</b><span id="statBoxWilayatsLabel"></span></div>
+          <div class="stat-box"><b id="statBoxTypes">—</b><span id="statBoxTypesLabel"></span></div>
+          <div class="stat-box"><b id="statBoxReview">—</b><span id="statBoxReviewLabel"></span></div>
+        </div>
+        <h3 id="breakdownTitleText" style="font-size:13px;margin:0 0 10px"></h3>
+        <div id="wilayatBreakdown"></div>
+      </div>
+
+      <div class="tab-pane" id="pane-data">
+        <h3 id="matrixTitleText" style="font-size:13px;margin:0 0 4px"></h3>
+        <p class="sub" id="matrixSubText"></p>
+        <div class="matrix-scroll">
+          <table class="cov" id="covTable"></table>
+        </div>
+        <div class="legend">
+          <span><span class="dot" style="background:#F6E3DC"></span><span id="legendGapText"></span></span>
+          <span><span class="dot" style="background:#FBEBD3"></span><span id="legendLowText"></span></span>
+          <span><span class="dot" style="background:#E1F0E5"></span><span id="legendOkText"></span></span>
+        </div>
+      </div>
+
+    </div>
+  </aside>
 </div>
-
-<section class="stats-section">
-  <div class="stat-box"><b id="statBoxTotal">—</b><span id="statBoxTotalLabel"></span></div>
-  <div class="stat-box"><b id="statBoxWilayats">—</b><span id="statBoxWilayatsLabel"></span></div>
-  <div class="stat-box"><b id="statBoxTypes">—</b><span id="statBoxTypesLabel"></span></div>
-  <div class="stat-box"><b id="statBoxReview">—</b><span id="statBoxReviewLabel"></span></div>
-</section>
-
-<section class="matrix" id="wilayatBreakdownSection">
-  <h2 id="breakdownTitleText"></h2>
-  <div id="wilayatBreakdown"></div>
-</section>
-
-<section class="matrix">
-  <h2 id="matrixTitleText"></h2>
-  <p class="sub" id="matrixSubText"></p>
-  <div class="matrix-scroll">
-    <table class="cov" id="covTable"></table>
-  </div>
-  <div class="legend">
-    <span><span class="dot" style="background:#F6E3DC"></span><span id="legendGapText"></span></span>
-    <span><span class="dot" style="background:#FBEBD3"></span><span id="legendLowText"></span></span>
-    <span><span class="dot" style="background:#E1F0E5"></span><span id="legendOkText"></span></span>
-  </div>
-</section>
 
 <footer id="footerNote"></footer>
 
@@ -216,106 +215,78 @@ async function getDb(){
   }
   return _dbPromise;
 }
-
 async function loadFirestoreCollection(name){
   const { collection, getDocs } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js');
   const db = await getDb();
   const snap = await getDocs(collection(db, name));
   return snap.docs.map(d => ({ id: d.id, ...d.data() }));
 }
+function loadLocalData(){ return fetch('institutions.json').then(r => r.json()); }
 
-// كل عيادة داخل clinics[] تتحول إلى نقطة مستقلة على الخريطة؛
-// المؤسسات القديمة بدون clinics تستخدم category/sub_category كخدمة وحيدة (توافق مع البيانات المستوردة)
 function flattenPrivate(data){
   const out = [];
   data.forEach(d => {
     if (Array.isArray(d.clinics) && d.clinics.length){
       d.clinics.forEach((c, i) => {
-        out.push({
-          ...d,
-          _clinicIndex: i,
-          _clinicCount: d.clinics.length,
+        out.push({ ...d, _clinicIndex:i, _clinicCount:d.clinics.length,
           sub_category: c.specialty || d.sub_category,
           working_days: c.working_days || d.working_days,
-          working_hours: c.working_hours || d.working_hours
-        });
+          working_hours: c.working_hours || d.working_hours });
       });
     } else {
-      out.push({ ...d, _clinicIndex: 0, _clinicCount: 1 });
+      out.push({ ...d, _clinicIndex:0, _clinicCount:1 });
     }
   });
   return out;
 }
 
-// ---------- Translation dictionary ----------
+// ---------- Translations ----------
 const T = {
   en: {
     eyebrow: 'Ministry of Health — Directorate General of Health Services, North Al Sharqiyah Governorate<br>Directorate of Planning &amp; Health Regulation — Private Health Institutions Department',
     title: 'Interactive Health Map of Private Health Institutions',
-    subtitle: 'Geographic distribution, service classification, and private healthcare sector by wilayat',
-    badge: 'Public sector data coming soon',
     searchPlaceholder: '🔍 Search by institution name...',
-    allWilayats: 'All Wilayats',
-    allCategories: 'All Categories',
-    allSpecialties: 'All Institution Types',
+    allWilayats: 'All Wilayats', allCategories: 'All Categories', allSpecialties: 'All Institution Types',
     institutionsShown: n => `${n} institutions shown`,
-    panelTitle: 'Displayed Institutions',
     noResults: 'No matching results',
-    matrixTitle: 'Service Coverage Matrix by Wilayat',
-    matrixSub: 'Number of active private institutions by service type and wilayat — red cells indicate a complete service gap (potential investment opportunity)',
+    detailsBtn: 'Details', detailsHeading: 'Details',
+    tabMap: 'Map', tabSearch: 'Search', tabStats: 'Statistics', tabData: 'Data',
+    matrixTitle: 'Service Coverage by Wilayat',
+    matrixSub: 'Active private institutions by service type and wilayat — red cells indicate a complete gap (potential investment opportunity)',
     serviceType: 'Service Type',
-    legendGap: 'No coverage (gap)',
-    legendLow: 'Limited coverage (1-2)',
-    legendOk: 'Good coverage (3+)',
-    licenseActive: 'License active',
-    licenseExpired: 'License expired',
-    approxLocation: '⚠ Approximate location — pending review',
-    approxLocationShort: '⚠ Approximate location',
-    footerLive: 'Data source: live database (Firestore)',
-    footerLocal: 'Currently running on local sample data — Firebase not yet connected',
-    footerLoaded: 'Page last loaded: ',
-    langBtn: 'العربية',
-    unnamed: 'Unnamed',
-    govLabel: 'Government Institution',
+    legendGap: 'No coverage', legendLow: 'Limited (1-2)', legendOk: 'Good (3+)',
+    licenseActive: 'License active', licenseExpired: 'License expired',
+    approxLocation: '⚠ Approximate location — pending review', approxLocationShort: '⚠ Approximate location',
+    footerLive: 'Live database (Firestore)', footerLocal: 'Local sample data — Firebase not connected',
+    footerLoaded: 'Last loaded: ', langBtn: 'العربية', unnamed: 'Unnamed', govLabel: 'Government Institution',
     popupWilayat: 'Wilayat', popupCategory: 'Type', popupStatus: 'Status', popupPhone: 'Phone', popupHours: 'Hours',
-    statTotalLabel: 'Institutions Shown', statWilayatsLabel: 'Wilayats Covered', statTypesLabel: 'Service Types', statReviewLabel: 'Locations Pending Review',
+    statTotalLabel: 'Institutions', statWilayatsLabel: 'Wilayats Covered', statTypesLabel: 'Service Types', statReviewLabel: 'Pending Review',
     breakdownTitle: 'Distribution by Wilayat'
   },
   ar: {
     eyebrow: 'وزارة الصحة — المديرية العامة للخدمات الصحية بمحافظة شمال الشرقية<br>دائرة التخطيط والتنظيم الصحي — قسم المؤسسات الصحية الخاصة',
     title: 'الخريطة الصحية التفاعلية للمؤسسات الصحية الخاصة',
-    subtitle: 'التوزيع الجغرافي وتصنيف الخدمات للقطاع الصحي الخاص حسب الولاية',
-    badge: 'بيانات القطاع الحكومي قريباً',
     searchPlaceholder: '🔍 ابحث باسم المؤسسة...',
-    allWilayats: 'كل الولايات',
-    allCategories: 'كل التصنيفات',
-    allSpecialties: 'كل أنواع المؤسسات',
+    allWilayats: 'كل الولايات', allCategories: 'كل التصنيفات', allSpecialties: 'كل أنواع المؤسسات',
     institutionsShown: n => `${n} مؤسسة معروضة`,
-    panelTitle: 'المؤسسات المعروضة',
     noResults: 'لا توجد نتائج مطابقة',
-    matrixTitle: 'مصفوفة تغطية الخدمات حسب الولاية',
-    matrixSub: 'عدد المؤسسات الخاصة السارية حسب نوع الخدمة والولاية — الخلايا الحمراء تشير إلى غياب كامل للخدمة (فرصة استثمارية محتملة)',
+    detailsBtn: 'التفاصيل', detailsHeading: 'التفاصيل',
+    tabMap: 'الخريطة', tabSearch: 'البحث', tabStats: 'الإحصائيات', tabData: 'البيانات',
+    matrixTitle: 'تغطية الخدمات حسب الولاية',
+    matrixSub: 'عدد المؤسسات الخاصة السارية حسب نوع الخدمة والولاية — الخلايا الحمراء تشير إلى فجوة كاملة (فرصة استثمارية)',
     serviceType: 'نوع الخدمة',
-    legendGap: 'لا يوجد (فجوة)',
-    legendLow: 'تغطية محدودة (1-2)',
-    legendOk: 'تغطية جيدة (3+)',
-    licenseActive: 'ترخيص ساري',
-    licenseExpired: 'ترخيص منتهي',
-    approxLocation: '⚠ الموقع تقريبي بانتظار المراجعة',
-    approxLocationShort: '⚠ موقع تقريبي',
-    footerLive: 'البيانات مصدرها قاعدة البيانات الحية (Firestore)',
-    footerLocal: 'يعمل حالياً على بيانات تجريبية محلية — لم يتم ربط Firebase بعد',
-    footerLoaded: 'آخر تحديث للصفحة: ',
-    langBtn: 'English',
-    unnamed: 'غير مسمى',
-    govLabel: 'مؤسسة حكومية',
+    legendGap: 'لا يوجد', legendLow: 'محدودة (1-2)', legendOk: 'جيدة (3+)',
+    licenseActive: 'ترخيص ساري', licenseExpired: 'ترخيص منتهي',
+    approxLocation: '⚠ الموقع تقريبي بانتظار المراجعة', approxLocationShort: '⚠ موقع تقريبي',
+    footerLive: 'قاعدة بيانات حية (Firestore)', footerLocal: 'بيانات تجريبية محلية — لم يتم ربط Firebase',
+    footerLoaded: 'آخر تحديث: ', langBtn: 'English', unnamed: 'غير مسمى', govLabel: 'مؤسسة حكومية',
     popupWilayat: 'الولاية', popupCategory: 'النوع', popupStatus: 'الحالة', popupPhone: 'الهاتف', popupHours: 'ساعات العمل',
-    statTotalLabel: 'مؤسسة معروضة', statWilayatsLabel: 'ولاية مغطاة', statTypesLabel: 'نوع خدمة', statReviewLabel: 'موقع بانتظار المراجعة',
+    statTotalLabel: 'مؤسسة', statWilayatsLabel: 'ولاية مغطاة', statTypesLabel: 'نوع خدمة', statReviewLabel: 'بانتظار المراجعة',
     breakdownTitle: 'التوزيع حسب الولاية'
   }
 };
 
-// ---------- Category → icon/color mapping ----------
+// ---------- Category → icon/color ----------
 const CATEGORY_STYLES = [
   { key:'dental', test: s => s.includes('dental'), emoji: '🦷', color: '#2E86AB', en: 'Dental', ar: 'أسنان' },
   { key:'optical', test: s => s.includes('optical') || s.includes('eye'), emoji: '👓', color: '#6B4FA0', en: 'Optical / Eye', ar: 'بصريات وعيون' },
@@ -328,92 +299,47 @@ const CATEGORY_STYLES = [
   { key:'polyclinic', test: s => s.includes('polyclinic') || s.includes('center') || s.includes('centre') || s.includes('complex'), emoji: '🏥', color: '#0B3D3F', en: 'Polyclinic / Center', ar: 'مجمع صحي' },
 ];
 const DEFAULT_STYLE = { key:'general', emoji: '➕', color: '#1B7A80', en: 'General Clinic', ar: 'عيادة عامة' };
-
 function getCategoryStyle(d){
   const s = ((d.sub_category||'') + ' ' + (d.category||'')).toLowerCase();
   return CATEGORY_STYLES.find(c => c.test(s)) || DEFAULT_STYLE;
 }
-
 function makeIcon(style, expired){
-  return L.divIcon({
-    className: '',
-    html: `<div class="pin-shape" style="background:${style.color};opacity:${expired?0.5:1}"><span class="pin-emoji">${style.emoji}</span></div>`,
-    iconSize: [34,34],
-    iconAnchor: [17,17],
-    popupAnchor: [0,-17]
-  });
+  return L.divIcon({ className:'', html:`<div class="pin-shape" style="background:${style.color};opacity:${expired?0.5:1}"><span class="pin-emoji">${style.emoji}</span></div>`, iconSize:[34,34], iconAnchor:[17,17], popupAnchor:[0,-17] });
 }
-
 function makeGovIcon(){
-  return L.divIcon({
-    className: '',
-    html: `<div class="gov-badge"><span class="gov-emoji">🏛️</span></div>`,
-    iconSize: [34,34],
-    iconAnchor: [17,17],
-    popupAnchor: [0,-17]
-  });
+  return L.divIcon({ className:'', html:`<div class="gov-badge"><span class="gov-emoji">🏛️</span></div>`, iconSize:[34,34], iconAnchor:[17,17], popupAnchor:[0,-17] });
 }
-
 function buildCategoryLegend(){
   const wrap = document.getElementById('categoryLegend');
   const all = CATEGORY_STYLES.concat([DEFAULT_STYLE]);
-  wrap.innerHTML = all.map(c => `
-    <span class="cat-pill" style="border-color:${c.color}">
-      <span class="cat-dot" style="background:${c.color}">${c.emoji}</span>${currentLang==='ar'?c.ar:c.en}
-    </span>`).join('') + `
-    <span class="cat-pill" style="border-color:#8B1E2E">
-      <span class="cat-dot" style="background:#8B1E2E">🏛️</span>${T[currentLang].govLabel}
-    </span>`;
+  wrap.innerHTML = all.map(c => `<span class="cat-pill" style="border-color:${c.color}"><span class="cat-dot" style="background:${c.color}">${c.emoji}</span>${currentLang==='ar'?c.ar:c.en}</span>`).join('') +
+    `<span class="cat-pill" style="border-color:#8B1E2E"><span class="cat-dot" style="background:#8B1E2E">🏛️</span>${T[currentLang].govLabel}</span>`;
 }
 
 // ---------- Map ----------
 function initMap(){
-  map = L.map('map', {scrollWheelZoom:true, tap:true}).setView([22.62, 58.55], 10);
-
-  const streets = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution:'&copy; OpenStreetMap contributors'
-  });
-  const satellite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-    attribution:'Tiles &copy; Esri — Source: Esri, Maxar, Earthstar Geographics'
-  });
-
+  map = L.map('map', {scrollWheelZoom:true, tap:true, zoomControl:true}).setView([22.62, 58.55], 10);
+  const streets = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {attribution:'&copy; OpenStreetMap contributors'});
+  const satellite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {attribution:'Tiles &copy; Esri'});
   satellite.addTo(map);
-  L.control.layers(
-    { '🛰️ Satellite': satellite, '🗺️ Streets': streets },
-    {}, { position: 'topleft', collapsed: false }
-  ).addTo(map);
-
+  L.control.layers({ '🛰️ Satellite': satellite, '🗺️ Streets': streets }, {}, { position:'topleft', collapsed:false }).addTo(map);
   markersLayer = L.markerClusterGroup({ showCoverageOnHover:false, maxClusterRadius:45, spiderfyOnMaxZoom:true });
   govLayer = L.layerGroup();
   map.addLayer(markersLayer);
   map.addLayer(govLayer);
 }
 
-function loadLocalData(){
-  return fetch('institutions.json').then(r => r.json());
-}
-
-function displayName(d){
-  const t = T[currentLang];
-  return currentLang === 'ar' ? (d.name_ar || d.name_en || t.unnamed) : (d.name_en || d.name_ar || t.unnamed);
-}
-function displayWilayat(d){
-  return currentLang === 'ar' ? (d.wilayat_ar || d.wilayat_en || '') : (d.wilayat_en || d.wilayat_ar || '');
-}
+function displayName(d){ const t=T[currentLang]; return currentLang==='ar' ? (d.name_ar||d.name_en||t.unnamed) : (d.name_en||d.name_ar||t.unnamed); }
+function displayWilayat(d){ return currentLang==='ar' ? (d.wilayat_ar||d.wilayat_en||'') : (d.wilayat_en||d.wilayat_ar||''); }
 
 function populateFilters(data){
   const t = T[currentLang];
   const wilayats = [...new Set(data.map(displayWilayat))].filter(Boolean).sort();
   const cats = [...new Set(data.map(d => d.category))].filter(Boolean).sort();
-
-  const wSel = document.getElementById('wilayatFilter');
-  const cSel = document.getElementById('categoryFilter');
-  const spSel = document.getElementById('specialtyFilter');
-
-  wSel.innerHTML = `<option value="">${t.allWilayats}</option>` + wilayats.map(w => `<option value="${w}">${w}</option>`).join('');
-  cSel.innerHTML = `<option value="">${t.allCategories}</option>` + cats.map(c => `<option value="${c}">${c}</option>`).join('');
-  spSel.innerHTML = `<option value="">${t.allSpecialties}</option>` +
-    CATEGORY_STYLES.concat([DEFAULT_STYLE]).map(c => `<option value="${c.key}">${c.emoji} ${currentLang==='ar'?c.ar:c.en}</option>`).join('');
+  document.getElementById('wilayatFilter').innerHTML = `<option value="">${t.allWilayats}</option>` + wilayats.map(w=>`<option value="${w}">${w}</option>`).join('');
+  document.getElementById('categoryFilter').innerHTML = `<option value="">${t.allCategories}</option>` + cats.map(c=>`<option value="${c}">${c}</option>`).join('');
+  document.getElementById('specialtyFilter').innerHTML = `<option value="">${t.allSpecialties}</option>` +
+    CATEGORY_STYLES.concat([DEFAULT_STYLE]).map(c=>`<option value="${c.key}">${c.emoji} ${currentLang==='ar'?c.ar:c.en}</option>`).join('');
 }
 
 function applyFilters(){
@@ -421,7 +347,6 @@ function applyFilters(){
   const w = document.getElementById('wilayatFilter').value;
   const c = document.getElementById('categoryFilter').value;
   const sp = document.getElementById('specialtyFilter').value;
-
   return allData.filter(d => {
     if (d.visible === false) return false;
     if (q && !displayName(d).toLowerCase().includes(q)) return false;
@@ -433,12 +358,7 @@ function applyFilters(){
 }
 
 function popupTable(title, rows){
-  return `<div style="font-family:inherit">
-    <span class="popup-title">${title}</span>
-    <table class="popup-table">
-      ${rows.filter(r => r[1]).map(r => `<tr><td class="pk">${r[0]}</td><td>${r[1]}</td></tr>`).join('')}
-    </table>
-  </div>`;
+  return `<div style="font-family:inherit"><span class="popup-title">${title}</span><table class="popup-table">${rows.filter(r=>r[1]).map(r=>`<tr><td class="pk">${r[0]}</td><td>${r[1]}</td></tr>`).join('')}</table></div>`;
 }
 
 function render(){
@@ -455,38 +375,30 @@ function render(){
     const style = getCategoryStyle(d);
     let lat = d.lat, lng = d.lng;
     if (d._clinicCount > 1){
-      const angle = (2 * Math.PI / d._clinicCount) * d._clinicIndex;
-      const r = 0.0006; // فصل بصري بسيط بين عيادات نفس المؤسسة
-      lat += r * Math.sin(angle);
-      lng += r * Math.cos(angle);
+      const angle = (2*Math.PI/d._clinicCount) * d._clinicIndex;
+      const r = 0.0006;
+      lat += r*Math.sin(angle); lng += r*Math.cos(angle);
     }
     const marker = L.marker([lat, lng], { icon: makeIcon(style, d.expired) }).bindPopup(popupTable(displayName(d), [
       [t.popupCategory, `${style.emoji} ${style[currentLang]} — ${d.sub_category || d.category || ''}`],
       [t.popupWilayat, `📍 ${displayWilayat(d)}`],
       [t.popupHours, d.working_hours ? `${d.working_days||''} ${d.working_hours}` : ''],
       [t.popupPhone, d.phone ? `📞 ${d.phone}` : ''],
-      [t.popupStatus, `<span style="color:${d.expired ? '#C4553B':'#3E8E5B'}">${d.expired ? t.licenseExpired : t.licenseActive}</span>` + (d.needs_location_review ? `<br><span style="color:#D98E36;font-size:11px">${t.approxLocation}</span>` : '')]
+      [t.popupStatus, `<span style="color:${d.expired?'#C4553B':'#3E8E5B'}">${d.expired?t.licenseExpired:t.licenseActive}</span>` + (d.needs_location_review ? `<br><span style="color:#D98E36;font-size:11px">${t.approxLocation}</span>` : '')]
     ]));
     marker.addTo(markersLayer);
 
     const card = document.createElement('div');
     card.className = 'inst-card' + (d.expired ? ' expired' : '');
-    card.innerHTML = `
-      <div class="inst-name">${displayName(d)}</div>
-      <div class="inst-meta">
-        <span class="tag ${d.expired?'exp':''}" style="background:${style.color}">${style.emoji} ${style[currentLang]}</span>${displayWilayat(d)}<br>
-        ${d.sub_category || ''}
-        ${d.needs_location_review ? `<br><span class="review-flag">${t.approxLocationShort}</span>` : ''}
-      </div>`;
-    card.onclick = () => { map.setView([lat, lng], 14); marker.openPopup(); };
+    card.innerHTML = `<div class="inst-name">${displayName(d)}</div><div class="inst-meta"><span class="tag" style="background:${style.color}">${style.emoji} ${style[currentLang]}</span>${displayWilayat(d)}<br>${d.sub_category||''}${d.needs_location_review?`<br><span class="review-flag">${t.approxLocationShort}</span>`:''}</div>`;
+    card.onclick = () => { map.setView([lat,lng], 14); marker.openPopup(); };
     cardList.appendChild(card);
   });
 
-  // مؤسسات القطاع الحكومي — تظهر دائماً بشكل منفصل بأيقونة مميزة
   govData.forEach(g => {
     if (g.visible === false || !g.lat || !g.lng) return;
-    const gName = currentLang === 'ar' ? (g.name_ar || g.name_en) : (g.name_en || g.name_ar);
-    const gWilayat = currentLang === 'ar' ? (g.wilayat_ar || g.wilayat_en) : (g.wilayat_en || g.wilayat_ar);
+    const gName = currentLang==='ar' ? (g.name_ar||g.name_en) : (g.name_en||g.name_ar);
+    const gWilayat = currentLang==='ar' ? (g.wilayat_ar||g.wilayat_en) : (g.wilayat_en||g.wilayat_ar);
     const marker = L.marker([g.lat, g.lng], { icon: makeGovIcon() }).bindPopup(popupTable(gName || t.unnamed, [
       [t.popupCategory, `🏛️ ${t.govLabel} — ${g.category||''}`],
       [t.popupWilayat, `📍 ${gWilayat||''}`],
@@ -501,11 +413,10 @@ function buildStats(){
   const active = allData.filter(d => d.visible !== false);
   const wilayats = [...new Set(active.map(displayWilayat))].filter(Boolean);
   const types = new Set(active.map(d => getCategoryStyle(d).key));
-
   document.getElementById('statBoxTotal').textContent = active.length;
   document.getElementById('statBoxWilayats').textContent = wilayats.length;
   document.getElementById('statBoxTypes').textContent = types.size;
-  document.getElementById('statBoxReview').textContent = active.filter(d => d.needs_location_review).length;
+  document.getElementById('statBoxReview').textContent = active.filter(d=>d.needs_location_review).length;
   document.getElementById('statBoxTotalLabel').textContent = t.statTotalLabel;
   document.getElementById('statBoxWilayatsLabel').textContent = t.statWilayatsLabel;
   document.getElementById('statBoxTypesLabel').textContent = t.statTypesLabel;
@@ -513,15 +424,11 @@ function buildStats(){
   document.getElementById('breakdownTitleText').textContent = t.breakdownTitle;
 
   const counts = {};
-  wilayats.forEach(w => counts[w] = active.filter(d => displayWilayat(d) === w).length);
-  const sorted = Object.entries(counts).sort((a,b) => b[1]-a[1]);
+  wilayats.forEach(w => counts[w] = active.filter(d => displayWilayat(d)===w).length);
+  const sorted = Object.entries(counts).sort((a,b)=>b[1]-a[1]);
   const max = sorted.length ? sorted[0][1] : 1;
   document.getElementById('wilayatBreakdown').innerHTML = sorted.map(([w,c]) => `
-    <div class="bar-row">
-      <span class="bar-label">${w}</span>
-      <div class="bar-track"><div class="bar-fill" style="width:${(c/max*100).toFixed(0)}%"></div></div>
-      <span class="bar-count">${c}</span>
-    </div>`).join('');
+    <div class="bar-row"><span class="bar-label">${w}</span><div class="bar-track"><div class="bar-fill" style="width:${(c/max*100).toFixed(0)}%"></div></div><span class="bar-count">${c}</span></div>`).join('');
 }
 
 function buildMatrix(){
@@ -529,13 +436,12 @@ function buildMatrix(){
   const active = allData.filter(d => d.visible !== false && !d.expired);
   const wilayats = [...new Set(active.map(displayWilayat))].filter(Boolean).sort();
   const subcats = [...new Set(active.map(d => d.sub_category))].filter(Boolean).sort();
-
   const table = document.getElementById('covTable');
-  let thead = `<tr><th>${t.serviceType}</th>` + wilayats.map(w => `<th>${w}</th>`).join('') + '</tr>';
+  let thead = `<tr><th>${t.serviceType}</th>` + wilayats.map(w=>`<th>${w}</th>`).join('') + '</tr>';
   let rows = subcats.map(sc => {
     const cells = wilayats.map(w => {
-      const count = active.filter(d => d.sub_category === sc && displayWilayat(d) === w).length;
-      const cls = count === 0 ? 'gap' : (count <= 2 ? 'low' : 'ok');
+      const count = active.filter(d => d.sub_category===sc && displayWilayat(d)===w).length;
+      const cls = count===0 ? 'gap' : (count<=2 ? 'low':'ok');
       return `<td><span class="cell ${cls}">${count}</span></td>`;
     }).join('');
     return `<tr><td>${sc}</td>${cells}</tr>`;
@@ -547,10 +453,13 @@ function applyStaticText(){
   const t = T[currentLang];
   document.getElementById('eyebrowText').innerHTML = t.eyebrow;
   document.getElementById('titleText').textContent = t.title;
-  document.getElementById('subtitleText').textContent = t.subtitle + ' ';
-  document.getElementById('badgeText').textContent = t.badge;
   document.getElementById('searchBox').placeholder = t.searchPlaceholder;
-  document.getElementById('panelTitleText').textContent = t.panelTitle;
+  document.getElementById('detailsBtnLabel').textContent = t.detailsBtn;
+  document.getElementById('detailsHeading').textContent = t.detailsHeading;
+  document.getElementById('dtabMapBtn').textContent = t.tabMap;
+  document.getElementById('dtabSearchBtn').textContent = t.tabSearch;
+  document.getElementById('dtabStatsBtn').textContent = t.tabStats;
+  document.getElementById('dtabDataBtn').textContent = t.tabData;
   document.getElementById('matrixTitleText').textContent = t.matrixTitle;
   document.getElementById('matrixSubText').textContent = t.matrixSub;
   document.getElementById('legendGapText').textContent = t.legendGap;
@@ -574,11 +483,22 @@ window.toggleLang = function(){
   updateFooter();
 }
 
+window.togglePanel = function(){ document.getElementById('detailsPanel').classList.toggle('open'); }
+window.closePanel = function(){ document.getElementById('detailsPanel').classList.remove('open'); }
+window.switchDTab = function(tab){
+  ['map','search','stats','data'].forEach(k=>{
+    document.getElementById('pane-'+k).classList.toggle('active', k===tab);
+  });
+  document.getElementById('dtabMapBtn').classList.toggle('active', tab==='map');
+  document.getElementById('dtabSearchBtn').classList.toggle('active', tab==='search');
+  document.getElementById('dtabStatsBtn').classList.toggle('active', tab==='stats');
+  document.getElementById('dtabDataBtn').classList.toggle('active', tab==='data');
+}
+
 function updateFooter(){
   const t = T[currentLang];
   document.getElementById('footerNote').textContent =
-    (FIREBASE_CONFIGURED ? t.footerLive : t.footerLocal) + ' · ' + t.footerLoaded +
-    new Date().toLocaleDateString(currentLang === 'ar' ? 'ar-OM' : 'en-GB');
+    (FIREBASE_CONFIGURED ? t.footerLive : t.footerLocal) + ' · ' + t.footerLoaded + new Date().toLocaleDateString(currentLang==='ar'?'ar-OM':'en-GB');
 }
 
 async function boot(){
@@ -592,15 +512,9 @@ async function boot(){
   try{
     const raw = FIREBASE_CONFIGURED ? await loadFirestoreCollection('institutions') : await loadLocalData();
     allData = flattenPrivate(raw);
-  }catch(e){
-    console.error(e);
-    allData = flattenPrivate(await loadLocalData());
-  }
-  try{
-    govData = FIREBASE_CONFIGURED ? await loadFirestoreCollection('gov_institutions') : [];
-  }catch(e){
-    govData = [];
-  }
+  }catch(e){ console.error(e); allData = flattenPrivate(await loadLocalData()); }
+  try{ govData = FIREBASE_CONFIGURED ? await loadFirestoreCollection('gov_institutions') : []; }catch(e){ govData = []; }
+
   populateFilters(allData);
   buildMatrix();
   buildStats();
