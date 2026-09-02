@@ -69,10 +69,14 @@
   .tag.exp{background:#B5AFA1}
   .empty-note{color:var(--muted);font-size:13px;padding:20px;text-align:center}
 
-  .pin-shape{width:30px;height:30px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);display:flex;align-items:center;justify-content:center;box-shadow:0 2px 4px rgba(0,0,0,.35);border:2px solid #fff}
-  .pin-emoji{transform:rotate(45deg);font-size:14px;line-height:1}
-  .gov-badge{width:28px;height:28px;background:#8B1E2E;border:2px solid #fff;border-radius:6px;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 4px rgba(0,0,0,.35)}
-  .gov-emoji{font-size:14px}
+  .pin-shape{width:34px;height:34px;border-radius:9px;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(0,0,0,.45);border:2.5px solid #fff}
+  .pin-emoji{font-size:17px;line-height:1;filter:drop-shadow(0 1px 1px rgba(0,0,0,.25))}
+  .gov-badge{width:34px;height:34px;background:#8B1E2E;border:2.5px solid #fff;border-radius:9px;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(0,0,0,.45)}
+  .gov-emoji{font-size:17px}
+  .popup-table{border-collapse:collapse;font-size:12.5px;min-width:210px}
+  .popup-table td{padding:3px 6px;border-bottom:1px solid #eee;vertical-align:top}
+  .popup-table td.pk{color:#7a7a7a;font-weight:600;white-space:nowrap;padding-inline-end:10px}
+  .popup-title{font-size:14px;font-weight:800;color:var(--teal-900);padding-bottom:4px;display:block}
   .leaflet-div-icon{background:transparent!important;border:none!important}
 
   section.matrix{padding:22px 16px 40px}
@@ -95,10 +99,22 @@
   footer{padding:14px 16px;color:var(--muted);font-size:11.5px;border-top:1px solid var(--line);line-height:1.6}
   .review-flag{color:var(--amber);font-weight:700}
 
+  .stats-section{display:flex;gap:10px;flex-wrap:wrap;padding:18px 16px 0}
+  .stat-box{flex:1;min-width:130px;background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:14px 16px}
+  .stat-box b{display:block;font-size:26px;color:var(--teal-900);font-family:'Inter',sans-serif}
+  .stat-box span{font-size:12px;color:var(--muted)}
+
+  .bar-row{display:grid;grid-template-columns:130px 1fr 40px;align-items:center;gap:10px;margin-bottom:8px;font-size:12.5px}
+  .bar-row .bar-label{color:var(--ink);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .bar-track{background:var(--sand);border-radius:6px;height:14px;overflow:hidden}
+  .bar-fill{background:var(--teal-500);height:100%;border-radius:6px}
+  .bar-row .bar-count{text-align:end;font-weight:700;color:var(--teal-900)}
+
   @media (min-width:640px){
     header{padding:22px 28px 20px}
     header h1{font-size:26px}
     #categoryLegend{padding:10px 28px}
+    .stats-section{padding:22px 28px 0}
     .filters{padding:14px 28px}
     .panel{padding:16px}
     section.matrix{padding:26px 28px 40px}
@@ -150,6 +166,18 @@
     <div id="cardList"></div>
   </div>
 </div>
+
+<section class="stats-section">
+  <div class="stat-box"><b id="statBoxTotal">—</b><span id="statBoxTotalLabel"></span></div>
+  <div class="stat-box"><b id="statBoxWilayats">—</b><span id="statBoxWilayatsLabel"></span></div>
+  <div class="stat-box"><b id="statBoxTypes">—</b><span id="statBoxTypesLabel"></span></div>
+  <div class="stat-box"><b id="statBoxReview">—</b><span id="statBoxReviewLabel"></span></div>
+</section>
+
+<section class="matrix" id="wilayatBreakdownSection">
+  <h2 id="breakdownTitleText"></h2>
+  <div id="wilayatBreakdown"></div>
+</section>
 
 <section class="matrix">
   <h2 id="matrixTitleText"></h2>
@@ -248,7 +276,10 @@ const T = {
     footerLoaded: 'Page last loaded: ',
     langBtn: 'العربية',
     unnamed: 'Unnamed',
-    govLabel: 'Government Institution'
+    govLabel: 'Government Institution',
+    popupWilayat: 'Wilayat', popupCategory: 'Type', popupStatus: 'Status', popupPhone: 'Phone', popupHours: 'Hours',
+    statTotalLabel: 'Institutions Shown', statWilayatsLabel: 'Wilayats Covered', statTypesLabel: 'Service Types', statReviewLabel: 'Locations Pending Review',
+    breakdownTitle: 'Distribution by Wilayat'
   },
   ar: {
     eyebrow: 'وزارة الصحة — المديرية العامة للخدمات الصحية بمحافظة شمال الشرقية<br>دائرة التخطيط والتنظيم الصحي — قسم المؤسسات الصحية الخاصة',
@@ -277,7 +308,10 @@ const T = {
     footerLoaded: 'آخر تحديث للصفحة: ',
     langBtn: 'English',
     unnamed: 'غير مسمى',
-    govLabel: 'مؤسسة حكومية'
+    govLabel: 'مؤسسة حكومية',
+    popupWilayat: 'الولاية', popupCategory: 'النوع', popupStatus: 'الحالة', popupPhone: 'الهاتف', popupHours: 'ساعات العمل',
+    statTotalLabel: 'مؤسسة معروضة', statWilayatsLabel: 'ولاية مغطاة', statTypesLabel: 'نوع خدمة', statReviewLabel: 'موقع بانتظار المراجعة',
+    breakdownTitle: 'التوزيع حسب الولاية'
   }
 };
 
@@ -303,10 +337,10 @@ function getCategoryStyle(d){
 function makeIcon(style, expired){
   return L.divIcon({
     className: '',
-    html: `<div class="pin-shape" style="background:${style.color};opacity:${expired?0.45:1}"><span class="pin-emoji">${style.emoji}</span></div>`,
-    iconSize: [30,30],
-    iconAnchor: [15,30],
-    popupAnchor: [0,-30]
+    html: `<div class="pin-shape" style="background:${style.color};opacity:${expired?0.5:1}"><span class="pin-emoji">${style.emoji}</span></div>`,
+    iconSize: [34,34],
+    iconAnchor: [17,17],
+    popupAnchor: [0,-17]
   });
 }
 
@@ -314,9 +348,9 @@ function makeGovIcon(){
   return L.divIcon({
     className: '',
     html: `<div class="gov-badge"><span class="gov-emoji">🏛️</span></div>`,
-    iconSize: [28,28],
-    iconAnchor: [14,14],
-    popupAnchor: [0,-14]
+    iconSize: [34,34],
+    iconAnchor: [17,17],
+    popupAnchor: [0,-17]
   });
 }
 
@@ -398,6 +432,15 @@ function applyFilters(){
   });
 }
 
+function popupTable(title, rows){
+  return `<div style="font-family:inherit">
+    <span class="popup-title">${title}</span>
+    <table class="popup-table">
+      ${rows.filter(r => r[1]).map(r => `<tr><td class="pk">${r[0]}</td><td>${r[1]}</td></tr>`).join('')}
+    </table>
+  </div>`;
+}
+
 function render(){
   const t = T[currentLang];
   const filtered = applyFilters();
@@ -417,17 +460,13 @@ function render(){
       lat += r * Math.sin(angle);
       lng += r * Math.cos(angle);
     }
-    const marker = L.marker([lat, lng], { icon: makeIcon(style, d.expired) }).bindPopup(`
-      <div style="font-family:inherit;min-width:200px">
-        <b>${displayName(d)}</b><br>
-        <span style="color:#555;font-size:12.5px">${style[currentLang]} — ${d.sub_category || d.category}</span><br>
-        <span style="font-size:12.5px">📍 ${displayWilayat(d)}</span><br>
-        ${d.working_hours ? `<span style="font-size:12px;color:#555">🕒 ${d.working_days||''} ${d.working_hours}</span><br>` : ''}
-        ${d.phone ? `<span style="font-size:12.5px">📞 ${d.phone}</span><br>`:''}
-        <span style="font-size:11.5px;color:${d.expired ? '#C4553B':'#3E8E5B'}">${d.expired ? t.licenseExpired : t.licenseActive}</span>
-        ${d.needs_location_review ? `<br><span style="font-size:11px;color:#D98E36">${t.approxLocation}</span>` : ''}
-      </div>
-    `);
+    const marker = L.marker([lat, lng], { icon: makeIcon(style, d.expired) }).bindPopup(popupTable(displayName(d), [
+      [t.popupCategory, `${style.emoji} ${style[currentLang]} — ${d.sub_category || d.category || ''}`],
+      [t.popupWilayat, `📍 ${displayWilayat(d)}`],
+      [t.popupHours, d.working_hours ? `${d.working_days||''} ${d.working_hours}` : ''],
+      [t.popupPhone, d.phone ? `📞 ${d.phone}` : ''],
+      [t.popupStatus, `<span style="color:${d.expired ? '#C4553B':'#3E8E5B'}">${d.expired ? t.licenseExpired : t.licenseActive}</span>` + (d.needs_location_review ? `<br><span style="color:#D98E36;font-size:11px">${t.approxLocation}</span>` : '')]
+    ]));
     marker.addTo(markersLayer);
 
     const card = document.createElement('div');
@@ -448,16 +487,41 @@ function render(){
     if (g.visible === false || !g.lat || !g.lng) return;
     const gName = currentLang === 'ar' ? (g.name_ar || g.name_en) : (g.name_en || g.name_ar);
     const gWilayat = currentLang === 'ar' ? (g.wilayat_ar || g.wilayat_en) : (g.wilayat_en || g.wilayat_ar);
-    const marker = L.marker([g.lat, g.lng], { icon: makeGovIcon() }).bindPopup(`
-      <div style="font-family:inherit;min-width:200px">
-        <b>${gName || t.unnamed}</b><br>
-        <span style="color:#555;font-size:12.5px">${t.govLabel} — ${g.category||''}</span><br>
-        <span style="font-size:12.5px">📍 ${gWilayat||''}</span>
-        ${g.opd_total ? `<br><span style="font-size:12px;color:#555">OPD 2025: ${g.opd_total}</span>`:''}
-      </div>
-    `);
+    const marker = L.marker([g.lat, g.lng], { icon: makeGovIcon() }).bindPopup(popupTable(gName || t.unnamed, [
+      [t.popupCategory, `🏛️ ${t.govLabel} — ${g.category||''}`],
+      [t.popupWilayat, `📍 ${gWilayat||''}`],
+      ['OPD 2025', g.opd_total || '']
+    ]));
     marker.addTo(govLayer);
   });
+}
+
+function buildStats(){
+  const t = T[currentLang];
+  const active = allData.filter(d => d.visible !== false);
+  const wilayats = [...new Set(active.map(displayWilayat))].filter(Boolean);
+  const types = new Set(active.map(d => getCategoryStyle(d).key));
+
+  document.getElementById('statBoxTotal').textContent = active.length;
+  document.getElementById('statBoxWilayats').textContent = wilayats.length;
+  document.getElementById('statBoxTypes').textContent = types.size;
+  document.getElementById('statBoxReview').textContent = active.filter(d => d.needs_location_review).length;
+  document.getElementById('statBoxTotalLabel').textContent = t.statTotalLabel;
+  document.getElementById('statBoxWilayatsLabel').textContent = t.statWilayatsLabel;
+  document.getElementById('statBoxTypesLabel').textContent = t.statTypesLabel;
+  document.getElementById('statBoxReviewLabel').textContent = t.statReviewLabel;
+  document.getElementById('breakdownTitleText').textContent = t.breakdownTitle;
+
+  const counts = {};
+  wilayats.forEach(w => counts[w] = active.filter(d => displayWilayat(d) === w).length);
+  const sorted = Object.entries(counts).sort((a,b) => b[1]-a[1]);
+  const max = sorted.length ? sorted[0][1] : 1;
+  document.getElementById('wilayatBreakdown').innerHTML = sorted.map(([w,c]) => `
+    <div class="bar-row">
+      <span class="bar-label">${w}</span>
+      <div class="bar-track"><div class="bar-fill" style="width:${(c/max*100).toFixed(0)}%"></div></div>
+      <span class="bar-count">${c}</span>
+    </div>`).join('');
 }
 
 function buildMatrix(){
@@ -505,6 +569,7 @@ window.toggleLang = function(){
   buildCategoryLegend();
   populateFilters(allData);
   buildMatrix();
+  buildStats();
   render();
   updateFooter();
 }
@@ -538,6 +603,7 @@ async function boot(){
   }
   populateFilters(allData);
   buildMatrix();
+  buildStats();
   render();
   updateFooter();
 
