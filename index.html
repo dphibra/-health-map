@@ -43,6 +43,8 @@
   .popup-table td{padding:3px 6px;border-bottom:1px solid #eee;vertical-align:top}
   .popup-table td.pk{color:#7a7a7a;font-weight:600;white-space:nowrap;padding-inline-end:10px}
   .popup-title{font-size:14px;font-weight:800;color:var(--teal-900);padding-bottom:4px;display:block}
+  .popup-directions{display:block;text-align:center;margin-top:8px;background:var(--teal-700);color:#fff!important;text-decoration:none;padding:7px 10px;border-radius:8px;font-size:12px;font-weight:700}
+  .popup-directions:hover{background:var(--teal-900)}
 
   /* ---------- Floating details button + slide-over panel ---------- */
   .details-fab{position:absolute;bottom:18px;right:16px;z-index:600;background:var(--teal-900);color:#fff;border:none;border-radius:24px;padding:12px 20px;font-weight:700;font-size:14px;box-shadow:0 4px 14px rgba(0,0,0,.35);cursor:pointer;font-family:inherit}
@@ -78,6 +80,8 @@
   .inst-meta{font-size:11.5px;color:var(--muted);line-height:1.6}
   .tag{display:inline-block;color:#fff;font-size:10px;padding:1px 8px;border-radius:20px;margin-inline-end:4px}
   .empty-note{color:var(--muted);font-size:13px;padding:20px;text-align:center}
+  .card-directions{display:inline-block;margin-top:6px;color:var(--teal-700)!important;text-decoration:none;font-size:11px;font-weight:700}
+  .card-directions:hover{text-decoration:underline}
 
   .stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:18px}
   .stat-box{background:var(--sand);border:1px solid var(--line);border-radius:10px;padding:12px 14px}
@@ -261,7 +265,8 @@ const T = {
     footerLoaded: 'Last loaded: ', langBtn: 'العربية', unnamed: 'Unnamed', govLabel: 'Government Institution',
     popupWilayat: 'Wilayat', popupCategory: 'Type', popupStatus: 'Status', popupPhone: 'Phone', popupHours: 'Hours',
     statTotalLabel: 'Institutions', statWilayatsLabel: 'Wilayats Covered', statTypesLabel: 'Service Types', statReviewLabel: 'Pending Review',
-    breakdownTitle: 'Distribution by Wilayat'
+    breakdownTitle: 'Distribution by Wilayat',
+    directionsLabel: 'Get Directions'
   },
   ar: {
     eyebrow: 'وزارة الصحة — المديرية العامة للخدمات الصحية بمحافظة شمال الشرقية<br>دائرة التخطيط والتنظيم الصحي — قسم المؤسسات الصحية الخاصة',
@@ -282,7 +287,8 @@ const T = {
     footerLoaded: 'آخر تحديث: ', langBtn: 'English', unnamed: 'غير مسمى', govLabel: 'مؤسسة حكومية',
     popupWilayat: 'الولاية', popupCategory: 'النوع', popupStatus: 'الحالة', popupPhone: 'الهاتف', popupHours: 'ساعات العمل',
     statTotalLabel: 'مؤسسة', statWilayatsLabel: 'ولاية مغطاة', statTypesLabel: 'نوع خدمة', statReviewLabel: 'بانتظار المراجعة',
-    breakdownTitle: 'التوزيع حسب الولاية'
+    breakdownTitle: 'التوزيع حسب الولاية',
+    directionsLabel: 'الاتجاهات (خرائط جوجل)'
   }
 };
 
@@ -392,12 +398,12 @@ function render(){
       [t.popupHours, d.working_hours ? `${d.working_days||''} ${d.working_hours}` : ''],
       [t.popupPhone, d.phone ? `📞 ${d.phone}` : ''],
       [t.popupStatus, `<span style="color:${d.expired?'#C4553B':'#3E8E5B'}">${d.expired?t.licenseExpired:t.licenseActive}</span>` + (d.needs_location_review ? `<br><span style="color:#D98E36;font-size:11px">${t.approxLocation}</span>` : '')]
-    ]));
+    ]) + directionsBtn(lat, lng));
     marker.addTo(markersLayer);
 
     const card = document.createElement('div');
     card.className = 'inst-card' + (d.expired ? ' expired' : '');
-    card.innerHTML = `<div class="inst-name">${displayName(d)}</div><div class="inst-meta"><span class="tag" style="background:${style.color}">${style.emoji} ${style[currentLang]}</span>${displayWilayat(d)}<br>${d.sub_category||''}${d.needs_location_review?`<br><span class="review-flag">${t.approxLocationShort}</span>`:''}</div>`;
+    card.innerHTML = `<div class="inst-name">${displayName(d)}</div><div class="inst-meta"><span class="tag" style="background:${style.color}">${style.emoji} ${style[currentLang]}</span>${displayWilayat(d)}<br>${d.sub_category||''}${d.needs_location_review?`<br><span class="review-flag">${t.approxLocationShort}</span>`:''}</div><a href="${mapsDirectionsUrl(lat,lng)}" target="_blank" rel="noopener" class="card-directions" onclick="event.stopPropagation()">🧭 ${t.directionsLabel}</a>`;
     card.onclick = () => { map.setView([lat,lng], 14); marker.openPopup(); };
     cardList.appendChild(card);
   });
@@ -410,7 +416,7 @@ function render(){
       [t.popupCategory, `🏛️ ${t.govLabel} — ${g.category||''}`],
       [t.popupWilayat, `📍 ${gWilayat||''}`],
       ['OPD 2025', g.opd_total || '']
-    ]));
+    ]) + directionsBtn(g.lat, g.lng));
     marker.addTo(govLayer);
   });
 }
