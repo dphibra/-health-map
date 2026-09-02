@@ -360,6 +360,13 @@ function applyFilters(){
 function popupTable(title, rows){
   return `<div style="font-family:inherit"><span class="popup-title">${title}</span><table class="popup-table">${rows.filter(r=>r[1]).map(r=>`<tr><td class="pk">${r[0]}</td><td>${r[1]}</td></tr>`).join('')}</table></div>`;
 }
+function mapsDirectionsUrl(lat, lng){
+  return `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`;
+}
+function directionsBtn(lat, lng){
+  const t = T[currentLang];
+  return `<a href="${mapsDirectionsUrl(lat,lng)}" target="_blank" rel="noopener" class="popup-directions">🧭 ${t.directionsLabel}</a>`;
+}
 
 function render(){
   const t = T[currentLang];
