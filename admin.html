@@ -261,7 +261,7 @@
     <!-- ===== عيادات إضافية (خاص فقط) ===== -->
     <div id="clinicsSection">
       <div class="section-title">العيادات المتوفرة بالمؤسسة (اختياري)</div>
-      <p style="font-size:12px;color:var(--muted);margin:-4px 0 8px">أضف كل عيادة/تخصص متوفر داخل هذي المؤسسة — كل واحدة راح تظهر كنقطة منفصلة على الخريطة العامة (مفيد للمجمعات الصحية اللي فيها أكثر من تخصص).</p>
+      <p style="font-size:12px;color:var(--muted);margin:-4px 0 8px">أضف اسم كل عيادة/تخصص متوفر داخل هذي المؤسسة — كل واحدة راح تظهر كنقطة منفصلة على الخريطة العامة (مفيد للمجمعات الصحية اللي فيها أكثر من تخصص). أيام وساعات العمل المدخلة بالأعلى تنطبق تلقائياً على كل العيادات — ما تحتاج تكررها هنا.</p>
       <div id="clinicsList"></div>
       <button type="button" class="ghost small" onclick="addClinicRow()">+ إضافة عيادة</button>
     </div>
@@ -345,11 +345,6 @@ function setSelectOrCustom(selectId, customId, value){
     sel.selectedIndex = 0; custom.style.display = 'none'; custom.value = '';
   }
 }
-
-window.toggleCustomSibling = function(sel){
-  const custom = sel.parentElement.querySelector('.' + sel.className + '-custom');
-  if (custom) custom.style.display = sel.value === 'custom' ? 'inline-block' : 'none';
-};
 
 if (FIREBASE_CONFIGURED){
   app = initializeApp(firebaseConfig);
@@ -522,24 +517,9 @@ window.toggleMapSize = function(){
 });
 
 // ---------- Repeatable clinic rows (private) ----------
-const DAY_PRESETS = ['السبت - الخميس','الأحد - الخميس','السبت - الأربعاء','يومياً'];
-const HOUR_PRESETS = ['8:00 ص - 8:00 م','9:00 ص - 9:00 م','8:00 ص - 2:00 م / 4:00 م - 8:00 م','24 ساعة'];
-
 function clinicRowHTML(c={}){
-  const isCustomDays = c.working_days && !DAY_PRESETS.includes(c.working_days);
-  const isCustomHours = c.working_hours && !HOUR_PRESETS.includes(c.working_hours);
-  return `<div class="repeat-row" style="flex-wrap:wrap">
-    <input class="c-specialty" placeholder="التخصص (مثال: أسنان / نساء وولادة)" value="${c.specialty||''}" style="flex:2 1 160px">
-    <select class="c-days" onchange="toggleCustomSibling(this)" style="flex:1 1 120px">
-      ${DAY_PRESETS.map(p=>`<option value="${p}" ${c.working_days===p?'selected':''}>${p}</option>`).join('')}
-      <option value="custom" ${isCustomDays?'selected':''}>أخرى</option>
-    </select>
-    <input class="c-days-custom" placeholder="أيام مخصصة" value="${isCustomDays?c.working_days:''}" style="display:${isCustomDays?'inline-block':'none'};flex:1 1 100px">
-    <select class="c-hours" onchange="toggleCustomSibling(this)" style="flex:1 1 140px">
-      ${HOUR_PRESETS.map(p=>`<option value="${p}" ${c.working_hours===p?'selected':''}>${p}</option>`).join('')}
-      <option value="custom" ${isCustomHours?'selected':''}>أخرى</option>
-    </select>
-    <input class="c-hours-custom" placeholder="ساعات مخصصة" value="${isCustomHours?c.working_hours:''}" style="display:${isCustomHours?'inline-block':'none'};flex:1 1 100px">
+  return `<div class="repeat-row">
+    <input class="c-specialty" placeholder="اسم العيادة/التخصص (مثال: أسنان / نساء وولادة)" value="${c.specialty||''}" style="flex:1">
     <button type="button" class="danger small" onclick="this.parentElement.remove()">×</button>
   </div>`;
 }
@@ -656,15 +636,9 @@ window.saveRecord = async function(){
       clinic_visits
     };
   } else {
-    const clinics = [...document.querySelectorAll('#clinicsList .repeat-row')].map(row => {
-      const daysSel = row.querySelector('.c-days');
-      const hoursSel = row.querySelector('.c-hours');
-      return {
-        specialty: row.querySelector('.c-specialty').value.trim(),
-        working_days: daysSel.value === 'custom' ? row.querySelector('.c-days-custom').value.trim() : daysSel.value,
-        working_hours: hoursSel.value === 'custom' ? row.querySelector('.c-hours-custom').value.trim() : hoursSel.value
-      };
-    }).filter(c => c.specialty);
+    const clinics = [...document.querySelectorAll('#clinicsList .repeat-row')].map(row => ({
+      specialty: row.querySelector('.c-specialty').value.trim()
+    })).filter(c => c.specialty);
     payload = {
       ...base,
       expired: document.getElementById('f_expired').value === 'true',
