@@ -168,15 +168,26 @@
       <div class="field"><label>الاسم (عربي)</label><input id="f_name_ar"></div>
       <div class="field"><label>Name (English)</label><input id="f_name_en"></div>
     </div>
-    <div class="row2">
-      <div class="field"><label>الولاية (عربي)</label><input id="f_wilayat_ar"></div>
-      <div class="field"><label>Wilayat (English)</label><input id="f_wilayat_en"></div>
+    <div class="field">
+      <label>الولاية</label>
+      <select id="f_wilayat_select" onchange="applyWilayatSelection()">
+        <option value="">— اختر الولاية —</option>
+      </select>
+      <input type="hidden" id="f_wilayat_ar">
+      <input type="hidden" id="f_wilayat_en">
     </div>
 
     <!-- ===== حقول خاصة بالقطاع الخاص ===== -->
     <div id="privateOnlyFields">
       <div class="row2">
-        <div class="field"><label>التصنيف العام (Category)</label><input id="f_category" placeholder="مثال: Clinic / Center / Polyclinic"></div>
+        <div class="field"><label>التصنيف العام (Category)</label>
+          <select id="f_category">
+            <option value="Clinic">عيادة (Clinic)</option>
+            <option value="Center">مركز (Center)</option>
+            <option value="Polyclinic">مجمع طبي (Polyclinic)</option>
+            <option value="Pharmacy">صيدلية (Pharmacy)</option>
+          </select>
+        </div>
         <div class="field"><label>نوع الخدمة الرئيسي (Sub Category)</label><input id="f_sub_category" placeholder="مثال: Dental General Clinic"></div>
       </div>
       <div class="row2">
@@ -184,8 +195,28 @@
         <div class="field"></div>
       </div>
       <div class="row2">
-        <div class="field"><label>أيام العمل (الخدمة الرئيسية)</label><input id="f_working_days" placeholder="السبت - الخميس"></div>
-        <div class="field"><label>ساعات العمل (الخدمة الرئيسية)</label><input id="f_working_hours" placeholder="8:00 ص - 8:00 م"></div>
+        <div class="field">
+          <label>أيام العمل (الخدمة الرئيسية)</label>
+          <select id="f_working_days" onchange="toggleCustom(this,'f_working_days_custom')">
+            <option value="السبت - الخميس">السبت - الخميس</option>
+            <option value="الأحد - الخميس">الأحد - الخميس</option>
+            <option value="السبت - الأربعاء">السبت - الأربعاء</option>
+            <option value="يومياً">يومياً (بدون إجازة)</option>
+            <option value="custom">أخرى (حدد يدوياً)</option>
+          </select>
+          <input id="f_working_days_custom" placeholder="اكتب أيام العمل" style="display:none;margin-top:6px">
+        </div>
+        <div class="field">
+          <label>ساعات العمل (الخدمة الرئيسية)</label>
+          <select id="f_working_hours" onchange="toggleCustom(this,'f_working_hours_custom')">
+            <option value="8:00 ص - 8:00 م">8:00 ص - 8:00 م</option>
+            <option value="9:00 ص - 9:00 م">9:00 ص - 9:00 م</option>
+            <option value="8:00 ص - 2:00 م / 4:00 م - 8:00 م">8:00 ص - 2:00 م / 4:00 م - 8:00 م</option>
+            <option value="24 ساعة">24 ساعة</option>
+            <option value="custom">أخرى (حدد يدوياً)</option>
+          </select>
+          <input id="f_working_hours_custom" placeholder="اكتب ساعات العمل" style="display:none;margin-top:6px">
+        </div>
       </div>
     </div>
 
@@ -265,6 +296,60 @@ import {
 let app, auth, db;
 let allData = [];
 let activeCollection = 'institutions'; // or 'gov_institutions'
+
+const WILAYATS = [
+  { en:'Ibra', ar:'إبراء' },
+  { en:'Al Mudhaibi', ar:'المضيبي' },
+  { en:'Bidiya', ar:'بدية' },
+  { en:'Al Qabil', ar:'القابل' },
+  { en:'Sinaw', ar:'سناو' },
+  { en:'Dima Wa Al Tayeen', ar:'دماء والطائيين' },
+  { en:'Wadi Bani Khalid', ar:'وادي بني خالد' }
+];
+
+function populateWilayatSelect(){
+  const sel = document.getElementById('f_wilayat_select');
+  sel.innerHTML = '<option value="">— اختر الولاية —</option>' +
+    WILAYATS.map((w,i) => `<option value="${i}">${w.ar} (${w.en})</option>`).join('');
+}
+populateWilayatSelect();
+
+window.applyWilayatSelection = function(){
+  const sel = document.getElementById('f_wilayat_select');
+  if (sel.value === ''){
+    document.getElementById('f_wilayat_ar').value = '';
+    document.getElementById('f_wilayat_en').value = '';
+    return;
+  }
+  const w = WILAYATS[parseInt(sel.value)];
+  document.getElementById('f_wilayat_ar').value = w.ar;
+  document.getElementById('f_wilayat_en').value = w.en;
+};
+
+window.toggleCustom = function(sel, customId){
+  document.getElementById(customId).style.display = sel.value === 'custom' ? 'block' : 'none';
+};
+function selectOrCustom(selectId, customId){
+  const sel = document.getElementById(selectId);
+  return sel.value === 'custom' ? document.getElementById(customId).value.trim() : sel.value;
+}
+function setSelectOrCustom(selectId, customId, value){
+  const sel = document.getElementById(selectId);
+  const custom = document.getElementById(customId);
+  const opts = [...sel.options].map(o => o.value);
+  if (value && opts.includes(value)){
+    sel.value = value; custom.style.display = 'none'; custom.value = '';
+  } else if (value){
+    sel.value = 'custom'; custom.style.display = 'block'; custom.value = value;
+  } else {
+    sel.selectedIndex = 0; custom.style.display = 'none'; custom.value = '';
+  }
+}
+
+window.toggleCustomSibling = function(sel){
+  const custom = sel.parentElement.querySelector('.' + sel.className + '-custom');
+  if (custom) custom.style.display = sel.value === 'custom' ? 'inline-block' : 'none';
+};
 
 if (FIREBASE_CONFIGURED){
   app = initializeApp(firebaseConfig);
@@ -437,11 +522,24 @@ window.toggleMapSize = function(){
 });
 
 // ---------- Repeatable clinic rows (private) ----------
+const DAY_PRESETS = ['السبت - الخميس','الأحد - الخميس','السبت - الأربعاء','يومياً'];
+const HOUR_PRESETS = ['8:00 ص - 8:00 م','9:00 ص - 9:00 م','8:00 ص - 2:00 م / 4:00 م - 8:00 م','24 ساعة'];
+
 function clinicRowHTML(c={}){
-  return `<div class="repeat-row">
-    <input class="c-specialty" placeholder="التخصص (مثال: أسنان / نساء وولادة)" value="${c.specialty||''}">
-    <input class="c-days" placeholder="أيام العمل" value="${c.working_days||''}">
-    <input class="c-hours" placeholder="ساعات العمل" value="${c.working_hours||''}">
+  const isCustomDays = c.working_days && !DAY_PRESETS.includes(c.working_days);
+  const isCustomHours = c.working_hours && !HOUR_PRESETS.includes(c.working_hours);
+  return `<div class="repeat-row" style="flex-wrap:wrap">
+    <input class="c-specialty" placeholder="التخصص (مثال: أسنان / نساء وولادة)" value="${c.specialty||''}" style="flex:2 1 160px">
+    <select class="c-days" onchange="toggleCustomSibling(this)" style="flex:1 1 120px">
+      ${DAY_PRESETS.map(p=>`<option value="${p}" ${c.working_days===p?'selected':''}>${p}</option>`).join('')}
+      <option value="custom" ${isCustomDays?'selected':''}>أخرى</option>
+    </select>
+    <input class="c-days-custom" placeholder="أيام مخصصة" value="${isCustomDays?c.working_days:''}" style="display:${isCustomDays?'inline-block':'none'};flex:1 1 100px">
+    <select class="c-hours" onchange="toggleCustomSibling(this)" style="flex:1 1 140px">
+      ${HOUR_PRESETS.map(p=>`<option value="${p}" ${c.working_hours===p?'selected':''}>${p}</option>`).join('')}
+      <option value="custom" ${isCustomHours?'selected':''}>أخرى</option>
+    </select>
+    <input class="c-hours-custom" placeholder="ساعات مخصصة" value="${isCustomHours?c.working_hours:''}" style="display:${isCustomHours?'inline-block':'none'};flex:1 1 100px">
     <button type="button" class="danger small" onclick="this.parentElement.remove()">×</button>
   </div>`;
 }
@@ -470,6 +568,10 @@ window.openModal = function(){
   document.getElementById('editId').value = '';
   ['name_ar','name_en','wilayat_ar','wilayat_en','category','sub_category','lat','lng','phone','email','working_days','working_hours','notes','opd_total','avg_working','avg_weekend']
     .forEach(f => { const el = document.getElementById('f_'+f); if(el) el.value = ''; });
+  document.getElementById('f_wilayat_select').value = '';
+  document.getElementById('f_category').value = 'Clinic';
+  setSelectOrCustom('f_working_days', 'f_working_days_custom', '');
+  setSelectOrCustom('f_working_hours', 'f_working_hours_custom', '');
   document.getElementById('f_expired').value = 'false';
   document.getElementById('f_category_gov').value = 'Health Center';
   document.getElementById('f_visible').checked = true;
@@ -489,8 +591,10 @@ window.editRecord = function(id){
   document.getElementById('f_name_en').value = d.name_en||'';
   document.getElementById('f_wilayat_ar').value = d.wilayat_ar||'';
   document.getElementById('f_wilayat_en').value = d.wilayat_en||'';
+  const wIdx = WILAYATS.findIndex(w => w.en === d.wilayat_en);
+  document.getElementById('f_wilayat_select').value = wIdx >= 0 ? wIdx : '';
   document.getElementById('f_expired').value = d.expired ? 'true':'false';
-  document.getElementById('f_category').value = d.category||'';
+  document.getElementById('f_category').value = d.category||'Clinic';
   document.getElementById('f_sub_category').value = d.sub_category||'';
   document.getElementById('f_category_gov').value = d.category || 'Health Center';
   document.getElementById('f_opd_total').value = d.opd_total ?? '';
@@ -500,8 +604,8 @@ window.editRecord = function(id){
   document.getElementById('f_lng').value = d.lng||'';
   document.getElementById('f_phone').value = d.phone||'';
   document.getElementById('f_email').value = d.email||'';
-  document.getElementById('f_working_days').value = d.working_days||'';
-  document.getElementById('f_working_hours').value = d.working_hours||'';
+  setSelectOrCustom('f_working_days', 'f_working_days_custom', d.working_days||'');
+  setSelectOrCustom('f_working_hours', 'f_working_hours_custom', d.working_hours||'');
   document.getElementById('f_notes').value = d.notes||'';
   document.getElementById('f_visible').checked = d.visible !== false;
 
@@ -552,18 +656,22 @@ window.saveRecord = async function(){
       clinic_visits
     };
   } else {
-    const clinics = [...document.querySelectorAll('#clinicsList .repeat-row')].map(row => ({
-      specialty: row.querySelector('.c-specialty').value.trim(),
-      working_days: row.querySelector('.c-days').value.trim(),
-      working_hours: row.querySelector('.c-hours').value.trim()
-    })).filter(c => c.specialty);
+    const clinics = [...document.querySelectorAll('#clinicsList .repeat-row')].map(row => {
+      const daysSel = row.querySelector('.c-days');
+      const hoursSel = row.querySelector('.c-hours');
+      return {
+        specialty: row.querySelector('.c-specialty').value.trim(),
+        working_days: daysSel.value === 'custom' ? row.querySelector('.c-days-custom').value.trim() : daysSel.value,
+        working_hours: hoursSel.value === 'custom' ? row.querySelector('.c-hours-custom').value.trim() : hoursSel.value
+      };
+    }).filter(c => c.specialty);
     payload = {
       ...base,
       expired: document.getElementById('f_expired').value === 'true',
       category: document.getElementById('f_category').value,
       sub_category: document.getElementById('f_sub_category').value,
-      working_days: document.getElementById('f_working_days').value,
-      working_hours: document.getElementById('f_working_hours').value,
+      working_days: selectOrCustom('f_working_days', 'f_working_days_custom'),
+      working_hours: selectOrCustom('f_working_hours', 'f_working_hours_custom'),
       clinics
     };
   }
