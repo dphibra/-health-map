@@ -121,16 +121,16 @@
     </div>
     <div class="details-body">
       <div class="field-block"><input id="searchBox" type="text"></div>
-      <div style="margin-bottom:8px"><button type="button" class="lang-btn" id="nearMeBtn" style="background:var(--teal-700);border-color:var(--teal-700);color:#fff" onclick="findNearMe()"></button></div>
-      <span class="stat-pill" id="countPill">—</span>
-      <div id="cardList"></div>
 
-      <div class="field-block" style="margin-top:14px">
+      <div class="field-block">
         <select id="wilayatFilter"></select>
-        <select id="categoryFilter"></select>
       </div>
       <div class="legend-title" id="legendTitleText"></div>
       <div id="categoryLegend"></div>
+
+      <div style="margin:12px 0 8px"><button type="button" class="lang-btn" id="nearMeBtn" style="background:var(--teal-700);border-color:var(--teal-700);color:#fff" onclick="findNearMe()"></button></div>
+      <span class="stat-pill" id="countPill">—</span>
+      <div id="cardList"></div>
     </div>
   </aside>
 </div>
@@ -199,7 +199,7 @@ const T = {
     footerLoaded: 'Last loaded: ', langBtn: 'العربية', unnamed: 'Unnamed', govLabel: 'Government Institution',
     popupWilayat: 'Wilayat', popupCategory: 'Type', popupStatus: 'Status', popupPhone: 'Phone', popupHours: 'Hours', popupClinics: 'Available Clinics',
     popupStaff: 'Staff', omaniLabel: 'Omani', nonOmaniLabel: 'Non-Omani',
-    directionsLabel: 'Get Directions', callLabel: 'Call',
+    directionsLabel: 'Get Directions', callLabel: 'Call', whatsappLabel: 'WhatsApp',
     nearMeBtn: '📍 Find Nearest to Me', nearMeBtnActive: '✕ Clear "Nearest to Me"',
     locationError: 'Could not get your location. Please check location permission for this site.',
     kmLabel: 'km'
@@ -219,7 +219,7 @@ const T = {
     footerLoaded: 'آخر تحديث: ', langBtn: 'English', unnamed: 'غير مسمى', govLabel: 'مؤسسة حكومية',
     popupWilayat: 'الولاية', popupCategory: 'النوع', popupStatus: 'الحالة', popupPhone: 'الهاتف', popupHours: 'ساعات العمل', popupClinics: 'العيادات المتوفرة',
     popupStaff: 'الكوادر', omaniLabel: 'عماني', nonOmaniLabel: 'غير عماني',
-    directionsLabel: 'الاتجاهات (خرائط جوجل)', callLabel: 'اتصال',
+    directionsLabel: 'الاتجاهات (خرائط جوجل)', callLabel: 'اتصال', whatsappLabel: 'واتساب',
     nearMeBtn: '📍 أقرب مؤسسة لي', nearMeBtnActive: '✕ إلغاء "الأقرب لي"',
     locationError: 'تعذر تحديد موقعك. تحقق من صلاحية الموقع (Location) لهذا الموقع في المتصفح.',
     kmLabel: 'كم'
@@ -303,20 +303,16 @@ function displayWilayat(d){ return currentLang==='ar' ? (d.wilayat_ar||d.wilayat
 function populateFilters(data){
   const t = T[currentLang];
   const wilayats = [...new Set(data.map(displayWilayat))].filter(Boolean).sort();
-  const cats = [...new Set(data.map(d => d.category))].filter(Boolean).sort();
   document.getElementById('wilayatFilter').innerHTML = `<option value="">${t.allWilayats}</option>` + wilayats.map(w=>`<option value="${w}">${w}</option>`).join('');
-  document.getElementById('categoryFilter').innerHTML = `<option value="">${t.allCategories}</option>` + cats.map(c=>`<option value="${c}">${c}</option>`).join('');
 }
 
 function applyFilters(){
   const q = document.getElementById('searchBox').value.trim().toLowerCase();
   const w = document.getElementById('wilayatFilter').value;
-  const c = document.getElementById('categoryFilter').value;
   return allData.filter(d => {
     if (d.visible === false) return false;
     if (q && !displayName(d).toLowerCase().includes(q)) return false;
     if (w && displayWilayat(d) !== w) return false;
-    if (c && d.category !== c) return false;
     if (selectedSpecialty && getCategoryStyle(d).key !== selectedSpecialty) return false;
     return true;
   });
@@ -336,6 +332,18 @@ function callBtn(phone){
   if (!phone) return '';
   const t = T[currentLang];
   return `<a href="tel:${phone}" class="popup-directions" style="background:var(--teal-500);margin-top:4px">📞 ${t.callLabel}</a>`;
+}
+function waNumber(phone){
+  let digits = (phone||'').replace(/[^0-9]/g,'');
+  if (digits.startsWith('00968')) digits = digits.slice(5);
+  else if (digits.startsWith('968') && digits.length > 8) digits = digits.slice(3);
+  return digits ? '968' + digits : '';
+}
+function waUrl(phone){ return `https://wa.me/${waNumber(phone)}`; }
+function waBtn(phone){
+  if (!phone) return '';
+  const t = T[currentLang];
+  return `<a href="${waUrl(phone)}" target="_blank" rel="noopener" class="popup-directions" style="background:#25D366;margin-top:4px">💬 ${t.whatsappLabel}</a>`;
 }
 function staffSummary(staffing){
   if (!staffing) return null;
@@ -381,14 +389,15 @@ function render(){
       [t.popupClinics, clinicsList],
       [t.popupHours, d.working_hours ? `${d.working_days||''} ${d.working_hours}` : ''],
       [t.popupStaff, ss ? `${ss.total} (${t.omaniLabel} ${ss.omani} / ${t.nonOmaniLabel} ${ss.nonOmani})` : '']
-    ]) + directionsBtn(lat, lng) + callBtn(d.phone));
+    ]) + directionsBtn(lat, lng) + callBtn(d.phone) + waBtn(d.phone));
     marker.bindTooltip(primaryName, { permanent:true, direction:'top', offset:[0,-15], className:'marker-label' });
     marker.addTo(markersLayer);
 
     const distBadge = (d._dist != null) ? ` · 📍 ${d._dist.toFixed(1)} ${t.kmLabel}` : '';
+    const waLink = d.phone ? `<a href="${waUrl(d.phone)}" target="_blank" rel="noopener" class="card-directions" onclick="event.stopPropagation()" style="color:#1DA851!important;margin-inline-start:10px">💬 ${t.whatsappLabel}</a>` : '';
     const card = document.createElement('div');
     card.className = 'inst-card' + (d.expired ? ' expired' : '');
-    card.innerHTML = `<div class="inst-name">${displayName(d)}</div><div class="inst-meta"><span class="tag" style="background:${style.color}">${style.emoji} ${style[currentLang]}</span>${d.phone ? `<a href="tel:${d.phone}" onclick="event.stopPropagation()" style="color:inherit;text-decoration:none">📞 ${d.phone}</a>` : ''}${distBadge}</div><a href="${mapsDirectionsUrl(lat,lng)}" target="_blank" rel="noopener" class="card-directions" onclick="event.stopPropagation()">🧭 ${t.directionsLabel}</a>`;
+    card.innerHTML = `<div class="inst-name">${displayName(d)}</div><div class="inst-meta"><span class="tag" style="background:${style.color}">${style.emoji} ${style[currentLang]}</span>${d.phone ? `<a href="tel:${d.phone}" onclick="event.stopPropagation()" style="color:inherit;text-decoration:none">📞 ${d.phone}</a>` : ''}${distBadge}</div><a href="${mapsDirectionsUrl(lat,lng)}" target="_blank" rel="noopener" class="card-directions" onclick="event.stopPropagation()">🧭 ${t.directionsLabel}</a>${waLink}`;
     card.onclick = () => { map.setView([lat,lng], 14); marker.openPopup(); };
     cardList.appendChild(card);
   });
@@ -404,7 +413,7 @@ function render(){
       [t.popupWilayat, `📍 ${gWilayat||''}`],
       [t.popupPhone, g.phone ? `📞 ${g.phone}` : ''],
       [t.popupStaff, gss ? `${gss.total} (${t.omaniLabel} ${gss.omani} / ${t.nonOmaniLabel} ${gss.nonOmani})` : '']
-    ]) + directionsBtn(g.lat, g.lng) + callBtn(g.phone));
+    ]) + directionsBtn(g.lat, g.lng) + callBtn(g.phone) + waBtn(g.phone));
     marker.bindTooltip(gName || t.unnamed, { permanent:true, direction:'top', offset:[0,-15], className:'marker-label' });
     marker.addTo(govLayer);
   });
@@ -486,7 +495,7 @@ async function boot(){
   render();
   updateFooter();
 
-  ['searchBox','wilayatFilter','categoryFilter'].forEach(id=>{
+  ['searchBox','wilayatFilter'].forEach(id=>{
     document.getElementById(id).addEventListener('input', render);
     document.getElementById(id).addEventListener('change', render);
   });
