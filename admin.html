@@ -261,10 +261,53 @@
     <!-- ===== عيادات إضافية (خاص فقط) ===== -->
     <div id="clinicsSection">
       <div class="section-title">العيادات المتوفرة بالمؤسسة (اختياري)</div>
-      <p style="font-size:12px;color:var(--muted);margin:-4px 0 8px">أضف اسم كل عيادة/تخصص متوفر داخل هذي المؤسسة — كل واحدة راح تظهر كنقطة منفصلة على الخريطة العامة (مفيد للمجمعات الصحية اللي فيها أكثر من تخصص). أيام وساعات العمل المدخلة بالأعلى تنطبق تلقائياً على كل العيادات — ما تحتاج تكررها هنا.</p>
+      <p style="font-size:12px;color:var(--muted);margin:-4px 0 8px">أضف اسم كل عيادة/تخصص متوفر داخل هذي المؤسسة — ستظهر هذه القائمة داخل نافذة معلومات المؤسسة على الخريطة العامة (نقطة واحدة فقط للمؤسسة، بدون نقاط منفصلة لكل عيادة).</p>
       <div id="clinicsList"></div>
       <button type="button" class="ghost small" onclick="addClinicRow()">+ إضافة عيادة</button>
     </div>
+
+    <!-- ===== الكوادر الطبية والإدارية (مشترك بين الخاص والحكومي) ===== -->
+    <div class="section-title">عدد الكوادر (الموظفين)</div>
+    <p style="font-size:12px;color:var(--muted);margin:-4px 0 8px">عدد الموظفين حسب النوع والجنسية. اتركها صفر إذا لم تنطبق.</p>
+    <table style="width:100%;border-collapse:collapse;font-size:12.5px;margin-bottom:10px">
+      <thead>
+        <tr>
+          <th style="text-align:right;padding:4px 6px;color:var(--muted);font-weight:600"></th>
+          <th style="padding:4px 6px;color:var(--muted);font-weight:600">عماني</th>
+          <th style="padding:4px 6px;color:var(--muted);font-weight:600">غير عماني</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td style="padding:4px 6px">طبيب أسنان</td>
+          <td style="padding:4px 6px"><input id="f_staff_dentist_om" type="number" min="0" value="0"></td>
+          <td style="padding:4px 6px"><input id="f_staff_dentist_nonom" type="number" min="0" value="0"></td>
+        </tr>
+        <tr>
+          <td style="padding:4px 6px">فني أسنان</td>
+          <td style="padding:4px 6px"><input id="f_staff_denttech_om" type="number" min="0" value="0"></td>
+          <td style="padding:4px 6px"><input id="f_staff_denttech_nonom" type="number" min="0" value="0"></td>
+        </tr>
+        <tr>
+          <td style="padding:4px 6px">فني أشعة</td>
+          <td style="padding:4px 6px"><input id="f_staff_radtech_om" type="number" min="0" value="0"></td>
+          <td style="padding:4px 6px"><input id="f_staff_radtech_nonom" type="number" min="0" value="0"></td>
+        </tr>
+        <tr>
+          <td style="padding:4px 6px">فني مختبر</td>
+          <td style="padding:4px 6px"><input id="f_staff_labtech_om" type="number" min="0" value="0"></td>
+          <td style="padding:4px 6px"><input id="f_staff_labtech_nonom" type="number" min="0" value="0"></td>
+        </tr>
+        <tr>
+          <td style="padding:4px 6px">موظف استقبال (عماني)</td>
+          <td style="padding:4px 6px" colspan="2"><input id="f_staff_reception_om" type="number" min="0" value="0"></td>
+        </tr>
+        <tr>
+          <td style="padding:4px 6px">موظف إداري (عماني)</td>
+          <td style="padding:4px 6px" colspan="2"><input id="f_staff_admin_om" type="number" min="0" value="0"></td>
+        </tr>
+      </tbody>
+    </table>
 
     <div class="row2" style="margin-top:14px">
       <div class="field"><label>الهاتف</label><input id="f_phone"></div>
@@ -535,6 +578,22 @@ function visitRowHTML(v={}){
 }
 window.addVisitRow = function(data){ document.getElementById('visitsList').insertAdjacentHTML('beforeend', visitRowHTML(data||{})); }
 
+// ---------- Staffing (shared private + government) ----------
+const STAFF_FIELDS = ['dentist_om','dentist_nonom','denttech_om','denttech_nonom','radtech_om','radtech_nonom','labtech_om','labtech_nonom','reception_om','admin_om'];
+function resetStaffFields(){
+  STAFF_FIELDS.forEach(f => { const el = document.getElementById('f_staff_'+f); if (el) el.value = 0; });
+}
+function collectStaffFields(){
+  const staffing = {};
+  STAFF_FIELDS.forEach(f => { staffing[f] = parseInt(document.getElementById('f_staff_'+f).value) || 0; });
+  return staffing;
+}
+function fillStaffFields(staffing){
+  resetStaffFields();
+  if (!staffing) return;
+  STAFF_FIELDS.forEach(f => { const el = document.getElementById('f_staff_'+f); if (el && staffing[f] != null) el.value = staffing[f]; });
+}
+
 function updateModalFieldsVisibility(){
   const isGov = activeCollection === 'gov_institutions';
   document.getElementById('privateOnlyFields').style.display = isGov ? 'none' : '';
@@ -557,6 +616,7 @@ window.openModal = function(){
   document.getElementById('f_visible').checked = true;
   document.getElementById('clinicsList').innerHTML = '';
   document.getElementById('visitsList').innerHTML = '';
+  resetStaffFields();
   updateModalFieldsVisibility();
   document.getElementById('modalBg').classList.add('show');
   initPickerMap(null, null);
@@ -595,6 +655,8 @@ window.editRecord = function(id){
   document.getElementById('visitsList').innerHTML = '';
   (d.clinic_visits||[]).forEach(v => window.addVisitRow(v));
 
+  fillStaffFields(d.staffing);
+
   updateModalFieldsVisibility();
   document.getElementById('modalBg').classList.add('show');
   initPickerMap(d.lat, d.lng);
@@ -618,7 +680,8 @@ window.saveRecord = async function(){
     email: document.getElementById('f_email').value,
     notes: document.getElementById('f_notes').value,
     visible: document.getElementById('f_visible').checked,
-    needs_location_review: false
+    needs_location_review: false,
+    staffing: collectStaffFields()
   };
 
   let payload;
@@ -675,6 +738,16 @@ window.runBulkImport = async function(){
 // ---------- Export to Excel ----------
 window.exportToExcel = function(){
   const isGov = activeCollection === 'gov_institutions';
+  const staffCols = (d) => {
+    const s = d.staffing || {};
+    return {
+      'Dentist (Omani)': s.dentist_om ?? 0, 'Dentist (Non-Omani)': s.dentist_nonom ?? 0,
+      'Dental Tech (Omani)': s.denttech_om ?? 0, 'Dental Tech (Non-Omani)': s.denttech_nonom ?? 0,
+      'Radiology Tech (Omani)': s.radtech_om ?? 0, 'Radiology Tech (Non-Omani)': s.radtech_nonom ?? 0,
+      'Lab Tech (Omani)': s.labtech_om ?? 0, 'Lab Tech (Non-Omani)': s.labtech_nonom ?? 0,
+      'Receptionist (Omani)': s.reception_om ?? 0, 'Admin Staff (Omani)': s.admin_om ?? 0
+    };
+  };
   const rows = allData.map(d => {
     if (!isGov){
       return {
@@ -685,6 +758,7 @@ window.exportToExcel = function(){
         'Clinics': (d.clinics||[]).map(c=>c.specialty).filter(Boolean).join('; '),
         'Working Days': d.working_days || '', 'Working Hours': d.working_hours || '',
         'Phone': d.phone || '', 'Email': d.email || '',
+        ...staffCols(d),
         'Latitude': d.lat, 'Longitude': d.lng,
         'Visible': d.visible !== false ? 'Yes' : 'No'
       };
@@ -697,6 +771,7 @@ window.exportToExcel = function(){
       'Avg Visits / Working Day': d.avg_working_day ?? '',
       'Avg Visits / Weekend': d.avg_weekend ?? '',
       'Visits by Clinic': (d.clinic_visits||[]).map(v=>`${v.clinic}: ${v.visits}`).join('; '),
+      ...staffCols(d),
       'Latitude': d.lat, 'Longitude': d.lng,
       'Visible': d.visible !== false ? 'Yes' : 'No'
     };

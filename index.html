@@ -60,18 +60,15 @@
   .details-head h3{margin:0;font-size:16px;color:var(--teal-900)}
   .panel-close{background:none;border:none;font-size:22px;cursor:pointer;color:var(--muted);line-height:1;padding:0 4px}
 
-  .details-tabs{display:flex;border-bottom:1px solid var(--line);flex:0 0 auto;min-width:380px}
-  .dtab{flex:1;background:none;border:none;padding:10px 4px;font-size:12px;font-weight:700;color:var(--muted);cursor:pointer;border-bottom:3px solid transparent;font-family:inherit}
-  .dtab.active{color:var(--teal-900);border-bottom-color:var(--teal-900)}
-
   .details-body{flex:1 1 auto;overflow-y:auto;padding:16px;-webkit-overflow-scrolling:touch;min-width:380px}
-  .tab-pane{display:none}
-  .tab-pane.active{display:block}
 
   .field-block select, .field-block input{width:100%;margin-bottom:8px;padding:10px 12px;border:1px solid var(--line);border-radius:8px;font-family:inherit;font-size:13.5px;background:#fff}
 
-  #categoryLegend{display:flex;flex-wrap:wrap;gap:6px;padding:10px 0 0}
-  .cat-pill{display:inline-flex;align-items:center;gap:6px;border:1.5px solid;border-radius:20px;padding:3px 10px 3px 3px;font-size:11px;color:var(--ink);background:#fff}
+  .legend-title{font-size:11.5px;font-weight:700;color:var(--muted);margin:14px 0 6px}
+  #categoryLegend{display:flex;flex-wrap:wrap;gap:6px;padding:0}
+  .cat-pill{display:inline-flex;align-items:center;gap:6px;border:1.5px solid;border-radius:20px;padding:3px 10px 3px 3px;font-size:11px;color:var(--ink);background:#fff;font-family:inherit;cursor:pointer}
+  button.cat-pill{-webkit-appearance:none;appearance:none}
+  .cat-pill.active{outline:2px solid var(--teal-900);outline-offset:1px;font-weight:800}
   body.lang-ar .cat-pill{padding:3px 3px 3px 10px}
   .cat-dot{width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;flex-shrink:0}
 
@@ -86,32 +83,7 @@
   .card-directions{display:inline-block;margin-top:6px;color:var(--teal-700)!important;text-decoration:none;font-size:11px;font-weight:700}
   .card-directions:hover{text-decoration:underline}
 
-  .stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:18px}
-  .stat-box{background:var(--sand);border:1px solid var(--line);border-radius:10px;padding:12px 14px}
-  .stat-box b{display:block;font-size:22px;color:var(--teal-900)}
-  .stat-box span{font-size:11px;color:var(--muted)}
-
-  .bar-row{display:grid;grid-template-columns:90px 1fr 30px;align-items:center;gap:8px;margin-bottom:7px;font-size:11.5px}
-  .bar-row .bar-label{color:var(--ink);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .bar-track{background:var(--sand);border-radius:6px;height:12px;overflow:hidden}
-  .bar-fill{background:var(--teal-500);height:100%;border-radius:6px}
-  .bar-row .bar-count{text-align:end;font-weight:700;color:var(--teal-900)}
-
-  .matrix-scroll{overflow-x:auto;border:1px solid var(--line);border-radius:10px;background:var(--paper);-webkit-overflow-scrolling:touch}
-  table.cov{border-collapse:collapse;width:100%;font-size:11.5px;min-width:480px}
-  table.cov th, table.cov td{padding:8px 8px;text-align:center;border-bottom:1px solid var(--line);white-space:nowrap}
-  table.cov th{background:var(--teal-900);color:#fff;font-weight:600;position:sticky;top:0}
-  table.cov td:first-child, table.cov th:first-child{text-align:start;position:sticky;inset-inline-start:0;background:var(--sand);font-weight:600;z-index:2}
-  table.cov th:first-child{background:var(--teal-900);z-index:3}
-  .cell{display:inline-flex;align-items:center;justify-content:center;min-width:28px;height:22px;border-radius:6px;font-weight:700;font-size:11px}
-  .cell.gap{background:#F6E3DC;color:var(--red)}
-  .cell.low{background:#FBEBD3;color:#8A5A12}
-  .cell.ok{background:#E1F0E5;color:var(--green)}
-  .legend{display:flex;gap:12px;margin-top:10px;font-size:11px;color:var(--muted);flex-wrap:wrap}
-  .legend span{display:inline-flex;align-items:center;gap:5px}
-  .dot{width:11px;height:11px;border-radius:3px;display:inline-block}
   .review-flag{color:var(--amber);font-weight:700}
-  p.sub{color:var(--muted);font-size:12px;margin:0 0 12px;line-height:1.6}
 
   footer{padding:6px 16px;color:var(--muted);font-size:10.5px;border-top:1px solid var(--line);flex:0 0 auto;background:var(--paper)}
 
@@ -147,53 +119,17 @@
       <h3 id="detailsHeading"></h3>
       <button class="panel-close" onclick="closePanel()">×</button>
     </div>
-    <div class="details-tabs">
-      <button class="dtab active" onclick="switchDTab('map')" id="dtabMapBtn"></button>
-      <button class="dtab" onclick="switchDTab('search')" id="dtabSearchBtn"></button>
-      <button class="dtab" onclick="switchDTab('stats')" id="dtabStatsBtn"></button>
-      <button class="dtab" onclick="switchDTab('data')" id="dtabDataBtn"></button>
-    </div>
     <div class="details-body">
+      <div class="field-block"><input id="searchBox" type="text"></div>
+      <span class="stat-pill" id="countPill">—</span>
+      <div id="cardList"></div>
 
-      <div class="tab-pane active" id="pane-map">
-        <div class="field-block">
-          <select id="wilayatFilter"></select>
-          <select id="categoryFilter"></select>
-          <select id="specialtyFilter"></select>
-        </div>
-        <div id="categoryLegend"></div>
+      <div class="field-block" style="margin-top:14px">
+        <select id="wilayatFilter"></select>
+        <select id="categoryFilter"></select>
       </div>
-
-      <div class="tab-pane" id="pane-search">
-        <div class="field-block"><input id="searchBox" type="text"></div>
-        <span class="stat-pill" id="countPill">—</span>
-        <div id="cardList"></div>
-      </div>
-
-      <div class="tab-pane" id="pane-stats">
-        <div class="stats-grid">
-          <div class="stat-box"><b id="statBoxTotal">—</b><span id="statBoxTotalLabel"></span></div>
-          <div class="stat-box"><b id="statBoxWilayats">—</b><span id="statBoxWilayatsLabel"></span></div>
-          <div class="stat-box"><b id="statBoxTypes">—</b><span id="statBoxTypesLabel"></span></div>
-          <div class="stat-box"><b id="statBoxReview">—</b><span id="statBoxReviewLabel"></span></div>
-        </div>
-        <h3 id="breakdownTitleText" style="font-size:13px;margin:0 0 10px"></h3>
-        <div id="wilayatBreakdown"></div>
-      </div>
-
-      <div class="tab-pane" id="pane-data">
-        <h3 id="matrixTitleText" style="font-size:13px;margin:0 0 4px"></h3>
-        <p class="sub" id="matrixSubText"></p>
-        <div class="matrix-scroll">
-          <table class="cov" id="covTable"></table>
-        </div>
-        <div class="legend">
-          <span><span class="dot" style="background:#F6E3DC"></span><span id="legendGapText"></span></span>
-          <span><span class="dot" style="background:#FBEBD3"></span><span id="legendLowText"></span></span>
-          <span><span class="dot" style="background:#E1F0E5"></span><span id="legendOkText"></span></span>
-        </div>
-      </div>
-
+      <div class="legend-title" id="legendTitleText"></div>
+      <div id="categoryLegend"></div>
     </div>
   </aside>
 </div>
@@ -209,6 +145,7 @@ let allData = [];
 let govData = [];
 let map, markersLayer, govLayer;
 let currentLang = localStorage.getItem('healthmap_lang') || 'en';
+let selectedSpecialty = '';
 let _dbPromise = null;
 
 async function getDb(){
@@ -240,44 +177,34 @@ const T = {
     eyebrow: 'Ministry of Health — Directorate General of Health Services, North Al Sharqiyah Governorate<br>Directorate of Planning &amp; Health Regulation — Private Health Institutions Department',
     title: 'Interactive Health Map of Private Health Institutions',
     searchPlaceholder: '🔍 Search by institution name...',
-    allWilayats: 'All Wilayats', allCategories: 'All Categories', allSpecialties: 'All Institution Types',
+    allWilayats: 'All Wilayats', allCategories: 'All Categories', allSpecialties: 'All Service Types',
     institutionsShown: n => `${n} institutions shown`,
     noResults: 'No matching results',
-    detailsBtn: 'Details', detailsHeading: 'Details',
-    tabMap: 'Map', tabSearch: 'Search', tabStats: 'Statistics', tabData: 'Data',
-    matrixTitle: 'Service Coverage by Wilayat',
-    matrixSub: 'Active private institutions by service type and wilayat — red cells indicate a complete gap (potential investment opportunity)',
-    serviceType: 'Service Type',
-    legendGap: 'No coverage', legendLow: 'Limited (1-2)', legendOk: 'Good (3+)',
+    detailsBtn: 'Search', detailsHeading: 'Search Institutions',
+    legendTitle: 'Browse by service type',
     licenseActive: 'License active', licenseExpired: 'License expired',
     approxLocation: '⚠ Approximate location — pending review', approxLocationShort: '⚠ Approximate location',
     footerLive: 'Live database (Firestore)', footerLocal: 'Local sample data — Firebase not connected',
     footerLoaded: 'Last loaded: ', langBtn: 'العربية', unnamed: 'Unnamed', govLabel: 'Government Institution',
     popupWilayat: 'Wilayat', popupCategory: 'Type', popupStatus: 'Status', popupPhone: 'Phone', popupHours: 'Hours', popupClinics: 'Available Clinics',
-    statTotalLabel: 'Institutions', statWilayatsLabel: 'Wilayats Covered', statTypesLabel: 'Service Types', statReviewLabel: 'Pending Review',
-    breakdownTitle: 'Distribution by Wilayat',
+    popupStaff: 'Staff', omaniLabel: 'Omani', nonOmaniLabel: 'Non-Omani',
     directionsLabel: 'Get Directions'
   },
   ar: {
     eyebrow: 'وزارة الصحة — المديرية العامة للخدمات الصحية بمحافظة شمال الشرقية<br>دائرة التخطيط والتنظيم الصحي — قسم المؤسسات الصحية الخاصة',
     title: 'الخريطة الصحية التفاعلية للمؤسسات الصحية الخاصة',
     searchPlaceholder: '🔍 ابحث باسم المؤسسة...',
-    allWilayats: 'كل الولايات', allCategories: 'كل التصنيفات', allSpecialties: 'كل أنواع المؤسسات',
+    allWilayats: 'كل الولايات', allCategories: 'كل التصنيفات', allSpecialties: 'كل أنواع الخدمات',
     institutionsShown: n => `${n} مؤسسة معروضة`,
     noResults: 'لا توجد نتائج مطابقة',
-    detailsBtn: 'التفاصيل', detailsHeading: 'التفاصيل',
-    tabMap: 'الخريطة', tabSearch: 'البحث', tabStats: 'الإحصائيات', tabData: 'البيانات',
-    matrixTitle: 'تغطية الخدمات حسب الولاية',
-    matrixSub: 'عدد المؤسسات الخاصة السارية حسب نوع الخدمة والولاية — الخلايا الحمراء تشير إلى فجوة كاملة (فرصة استثمارية)',
-    serviceType: 'نوع الخدمة',
-    legendGap: 'لا يوجد', legendLow: 'محدودة (1-2)', legendOk: 'جيدة (3+)',
+    detailsBtn: 'البحث', detailsHeading: 'البحث عن مؤسسة',
+    legendTitle: 'تصفية حسب نوع الخدمة',
     licenseActive: 'ترخيص ساري', licenseExpired: 'ترخيص منتهي',
     approxLocation: '⚠ الموقع تقريبي بانتظار المراجعة', approxLocationShort: '⚠ موقع تقريبي',
     footerLive: 'قاعدة بيانات حية (Firestore)', footerLocal: 'بيانات تجريبية محلية — لم يتم ربط Firebase',
     footerLoaded: 'آخر تحديث: ', langBtn: 'English', unnamed: 'غير مسمى', govLabel: 'مؤسسة حكومية',
     popupWilayat: 'الولاية', popupCategory: 'النوع', popupStatus: 'الحالة', popupPhone: 'الهاتف', popupHours: 'ساعات العمل', popupClinics: 'العيادات المتوفرة',
-    statTotalLabel: 'مؤسسة', statWilayatsLabel: 'ولاية مغطاة', statTypesLabel: 'نوع خدمة', statReviewLabel: 'بانتظار المراجعة',
-    breakdownTitle: 'التوزيع حسب الولاية',
+    popupStaff: 'الكوادر', omaniLabel: 'عماني', nonOmaniLabel: 'غير عماني',
     directionsLabel: 'الاتجاهات (خرائط جوجل)'
   }
 };
@@ -328,8 +255,16 @@ function makeGovIcon(){
 function buildCategoryLegend(){
   const wrap = document.getElementById('categoryLegend');
   const all = CATEGORY_STYLES.concat([DEFAULT_STYLE]);
-  wrap.innerHTML = all.map(c => `<span class="cat-pill" style="border-color:${c.color}"><span class="cat-dot" style="background:${c.color}">${c.emoji}</span>${currentLang==='ar'?c.ar:c.en}</span>`).join('') +
-    `<span class="cat-pill" style="border-color:#8B1E2E"><span class="cat-dot" style="background:#8B1E2E">🏛️</span>${T[currentLang].govLabel}</span>`;
+  const t = T[currentLang];
+  let html = `<button type="button" class="cat-pill${selectedSpecialty===''?' active':''}" style="border-color:var(--teal-500)" onclick="selectSpecialty('')">${t.allSpecialties}</button>`;
+  html += all.map(c => `<button type="button" class="cat-pill${selectedSpecialty===c.key?' active':''}" style="border-color:${c.color}" onclick="selectSpecialty('${c.key}')"><span class="cat-dot" style="background:${c.color}">${c.emoji}</span>${currentLang==='ar'?c.ar:c.en}</button>`).join('');
+  html += `<span class="cat-pill" style="border-color:#8B1E2E"><span class="cat-dot" style="background:#8B1E2E">🏛️</span>${t.govLabel}</span>`;
+  wrap.innerHTML = html;
+}
+window.selectSpecialty = function(key){
+  selectedSpecialty = key;
+  buildCategoryLegend();
+  render();
 }
 
 // ---------- Map ----------
@@ -354,21 +289,18 @@ function populateFilters(data){
   const cats = [...new Set(data.map(d => d.category))].filter(Boolean).sort();
   document.getElementById('wilayatFilter').innerHTML = `<option value="">${t.allWilayats}</option>` + wilayats.map(w=>`<option value="${w}">${w}</option>`).join('');
   document.getElementById('categoryFilter').innerHTML = `<option value="">${t.allCategories}</option>` + cats.map(c=>`<option value="${c}">${c}</option>`).join('');
-  document.getElementById('specialtyFilter').innerHTML = `<option value="">${t.allSpecialties}</option>` +
-    CATEGORY_STYLES.concat([DEFAULT_STYLE]).map(c=>`<option value="${c.key}">${c.emoji} ${currentLang==='ar'?c.ar:c.en}</option>`).join('');
 }
 
 function applyFilters(){
   const q = document.getElementById('searchBox').value.trim().toLowerCase();
   const w = document.getElementById('wilayatFilter').value;
   const c = document.getElementById('categoryFilter').value;
-  const sp = document.getElementById('specialtyFilter').value;
   return allData.filter(d => {
     if (d.visible === false) return false;
     if (q && !displayName(d).toLowerCase().includes(q)) return false;
     if (w && displayWilayat(d) !== w) return false;
     if (c && d.category !== c) return false;
-    if (sp && getCategoryStyle(d).key !== sp) return false;
+    if (selectedSpecialty && getCategoryStyle(d).key !== selectedSpecialty) return false;
     return true;
   });
 }
@@ -382,6 +314,18 @@ function mapsDirectionsUrl(lat, lng){
 function directionsBtn(lat, lng){
   const t = T[currentLang];
   return `<a href="${mapsDirectionsUrl(lat,lng)}" target="_blank" rel="noopener" class="popup-directions">🧭 ${t.directionsLabel}</a>`;
+}
+function staffSummary(staffing){
+  if (!staffing) return null;
+  const keys = Object.keys(staffing);
+  if (!keys.length) return null;
+  let omani = 0, nonOmani = 0, total = 0;
+  keys.forEach(k => {
+    const v = parseInt(staffing[k]) || 0;
+    total += v;
+    if (k.endsWith('_nonom')) nonOmani += v; else omani += v;
+  });
+  return total ? { total, omani, nonOmani } : null;
 }
 
 function render(){
@@ -402,19 +346,21 @@ function render(){
     const clinicsList = (Array.isArray(d.clinics) && d.clinics.length)
       ? d.clinics.map(c => c.specialty).filter(Boolean).map(s => `• ${s}`).join('<br>')
       : '';
+    const ss = staffSummary(d.staffing);
     const marker = L.marker([lat, lng], { icon: makeIcon(style, d.expired) }).bindPopup(popupTable(primaryName, secondaryName, [
       [t.popupCategory, `${style.emoji} ${style[currentLang]} — ${d.sub_category || d.category || ''}`],
       [t.popupWilayat, `📍 ${displayWilayat(d)}`],
       [t.popupPhone, d.phone ? `📞 ${d.phone}` : ''],
       [t.popupClinics, clinicsList],
-      [t.popupHours, d.working_hours ? `${d.working_days||''} ${d.working_hours}` : '']
+      [t.popupHours, d.working_hours ? `${d.working_days||''} ${d.working_hours}` : ''],
+      [t.popupStaff, ss ? `${ss.total} (${t.omaniLabel} ${ss.omani} / ${t.nonOmaniLabel} ${ss.nonOmani})` : '']
     ]) + directionsBtn(lat, lng));
     marker.bindTooltip(primaryName, { permanent:true, direction:'top', offset:[0,-15], className:'marker-label' });
     marker.addTo(markersLayer);
 
     const card = document.createElement('div');
     card.className = 'inst-card' + (d.expired ? ' expired' : '');
-    card.innerHTML = `<div class="inst-name">${displayName(d)}</div><div class="inst-meta"><span class="tag" style="background:${style.color}">${style.emoji} ${style[currentLang]}</span>${displayWilayat(d)}<br>${d.sub_category||''}${d.needs_location_review?`<br><span class="review-flag">${t.approxLocationShort}</span>`:''}</div><a href="${mapsDirectionsUrl(lat,lng)}" target="_blank" rel="noopener" class="card-directions" onclick="event.stopPropagation()">🧭 ${t.directionsLabel}</a>`;
+    card.innerHTML = `<div class="inst-name">${displayName(d)}</div><div class="inst-meta"><span class="tag" style="background:${style.color}">${style.emoji} ${style[currentLang]}</span>${d.phone ? `📞 ${d.phone}` : ''}</div><a href="${mapsDirectionsUrl(lat,lng)}" target="_blank" rel="noopener" class="card-directions" onclick="event.stopPropagation()">🧭 ${t.directionsLabel}</a>`;
     card.onclick = () => { map.setView([lat,lng], 14); marker.openPopup(); };
     cardList.appendChild(card);
   });
@@ -424,55 +370,16 @@ function render(){
     const gName = currentLang==='ar' ? (g.name_ar||g.name_en) : (g.name_en||g.name_ar);
     const gWilayat = currentLang==='ar' ? (g.wilayat_ar||g.wilayat_en) : (g.wilayat_en||g.wilayat_ar);
     const gNameSecondary = currentLang === 'ar' ? (g.name_en||'') : (g.name_ar||'');
+    const gss = staffSummary(g.staffing);
     const marker = L.marker([g.lat, g.lng], { icon: makeGovIcon() }).bindPopup(popupTable(gName || t.unnamed, gNameSecondary, [
       [t.popupCategory, `🏛️ ${t.govLabel} — ${g.category||''}`],
       [t.popupWilayat, `📍 ${gWilayat||''}`],
-      ['OPD 2025', g.opd_total || '']
+      ['OPD 2025', g.opd_total || ''],
+      [t.popupStaff, gss ? `${gss.total} (${t.omaniLabel} ${gss.omani} / ${t.nonOmaniLabel} ${gss.nonOmani})` : '']
     ]) + directionsBtn(g.lat, g.lng));
     marker.bindTooltip(gName || t.unnamed, { permanent:true, direction:'top', offset:[0,-15], className:'marker-label' });
     marker.addTo(govLayer);
   });
-}
-
-function buildStats(){
-  const t = T[currentLang];
-  const active = allData.filter(d => d.visible !== false);
-  const wilayats = [...new Set(active.map(displayWilayat))].filter(Boolean);
-  const types = new Set(active.map(d => getCategoryStyle(d).key));
-  document.getElementById('statBoxTotal').textContent = active.length;
-  document.getElementById('statBoxWilayats').textContent = wilayats.length;
-  document.getElementById('statBoxTypes').textContent = types.size;
-  document.getElementById('statBoxReview').textContent = active.filter(d=>d.needs_location_review).length;
-  document.getElementById('statBoxTotalLabel').textContent = t.statTotalLabel;
-  document.getElementById('statBoxWilayatsLabel').textContent = t.statWilayatsLabel;
-  document.getElementById('statBoxTypesLabel').textContent = t.statTypesLabel;
-  document.getElementById('statBoxReviewLabel').textContent = t.statReviewLabel;
-  document.getElementById('breakdownTitleText').textContent = t.breakdownTitle;
-
-  const counts = {};
-  wilayats.forEach(w => counts[w] = active.filter(d => displayWilayat(d)===w).length);
-  const sorted = Object.entries(counts).sort((a,b)=>b[1]-a[1]);
-  const max = sorted.length ? sorted[0][1] : 1;
-  document.getElementById('wilayatBreakdown').innerHTML = sorted.map(([w,c]) => `
-    <div class="bar-row"><span class="bar-label">${w}</span><div class="bar-track"><div class="bar-fill" style="width:${(c/max*100).toFixed(0)}%"></div></div><span class="bar-count">${c}</span></div>`).join('');
-}
-
-function buildMatrix(){
-  const t = T[currentLang];
-  const active = allData.filter(d => d.visible !== false && !d.expired);
-  const wilayats = [...new Set(active.map(displayWilayat))].filter(Boolean).sort();
-  const subcats = [...new Set(active.map(d => d.sub_category))].filter(Boolean).sort();
-  const table = document.getElementById('covTable');
-  let thead = `<tr><th>${t.serviceType}</th>` + wilayats.map(w=>`<th>${w}</th>`).join('') + '</tr>';
-  let rows = subcats.map(sc => {
-    const cells = wilayats.map(w => {
-      const count = active.filter(d => d.sub_category===sc && displayWilayat(d)===w).length;
-      const cls = count===0 ? 'gap' : (count<=2 ? 'low':'ok');
-      return `<td><span class="cell ${cls}">${count}</span></td>`;
-    }).join('');
-    return `<tr><td>${sc}</td>${cells}</tr>`;
-  }).join('');
-  table.innerHTML = thead + rows;
 }
 
 function applyStaticText(){
@@ -482,15 +389,7 @@ function applyStaticText(){
   document.getElementById('searchBox').placeholder = t.searchPlaceholder;
   document.getElementById('detailsBtnLabel').textContent = t.detailsBtn;
   document.getElementById('detailsHeading').textContent = t.detailsHeading;
-  document.getElementById('dtabMapBtn').textContent = t.tabMap;
-  document.getElementById('dtabSearchBtn').textContent = t.tabSearch;
-  document.getElementById('dtabStatsBtn').textContent = t.tabStats;
-  document.getElementById('dtabDataBtn').textContent = t.tabData;
-  document.getElementById('matrixTitleText').textContent = t.matrixTitle;
-  document.getElementById('matrixSubText').textContent = t.matrixSub;
-  document.getElementById('legendGapText').textContent = t.legendGap;
-  document.getElementById('legendLowText').textContent = t.legendLow;
-  document.getElementById('legendOkText').textContent = t.legendOk;
+  document.getElementById('legendTitleText').textContent = t.legendTitle;
   document.getElementById('langToggle').textContent = t.langBtn;
 }
 
@@ -503,23 +402,12 @@ window.toggleLang = function(){
   applyStaticText();
   buildCategoryLegend();
   populateFilters(allData);
-  buildMatrix();
-  buildStats();
   render();
   updateFooter();
 }
 
 window.togglePanel = function(){ document.getElementById('detailsPanel').classList.toggle('open'); }
 window.closePanel = function(){ document.getElementById('detailsPanel').classList.remove('open'); }
-window.switchDTab = function(tab){
-  ['map','search','stats','data'].forEach(k=>{
-    document.getElementById('pane-'+k).classList.toggle('active', k===tab);
-  });
-  document.getElementById('dtabMapBtn').classList.toggle('active', tab==='map');
-  document.getElementById('dtabSearchBtn').classList.toggle('active', tab==='search');
-  document.getElementById('dtabStatsBtn').classList.toggle('active', tab==='stats');
-  document.getElementById('dtabDataBtn').classList.toggle('active', tab==='data');
-}
 
 function updateFooter(){
   const t = T[currentLang];
@@ -542,12 +430,10 @@ async function boot(){
   try{ govData = FIREBASE_CONFIGURED ? await loadFirestoreCollection('gov_institutions') : []; }catch(e){ govData = []; }
 
   populateFilters(allData);
-  buildMatrix();
-  buildStats();
   render();
   updateFooter();
 
-  ['searchBox','wilayatFilter','categoryFilter','specialtyFilter'].forEach(id=>{
+  ['searchBox','wilayatFilter','categoryFilter'].forEach(id=>{
     document.getElementById(id).addEventListener('input', render);
     document.getElementById(id).addEventListener('change', render);
   });
