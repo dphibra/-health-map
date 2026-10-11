@@ -339,7 +339,7 @@ function waNumber(phone){
   else if (digits.startsWith('968') && digits.length > 8) digits = digits.slice(3);
   return digits ? '968' + digits : '';
 }
-function waUrl(phone){ return `https://wa.me/${waNumber(phone)}`; }
+function waUrl(phone){ return `https://api.whatsapp.com/send?phone=${waNumber(phone)}`; }
 function waBtn(phone){
   if (!phone) return '';
   const t = T[currentLang];
