@@ -121,6 +121,7 @@
     </div>
     <div class="details-body">
       <div class="field-block"><input id="searchBox" type="text"></div>
+      <div style="margin-bottom:8px"><button type="button" class="lang-btn" id="nearMeBtn" style="background:var(--teal-700);border-color:var(--teal-700);color:#fff" onclick="findNearMe()"></button></div>
       <span class="stat-pill" id="countPill">—</span>
       <div id="cardList"></div>
 
@@ -146,7 +147,17 @@ let govData = [];
 let map, markersLayer, govLayer;
 let currentLang = localStorage.getItem('healthmap_lang') || 'en';
 let selectedSpecialty = '';
+let userLoc = null;
+let userMarker = null;
 let _dbPromise = null;
+
+function haversineKm(lat1, lng1, lat2, lng2){
+  const R = 6371;
+  const dLat = (lat2-lat1) * Math.PI/180;
+  const dLng = (lng2-lng1) * Math.PI/180;
+  const a = Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLng/2)**2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+}
 
 async function getDb(){
   if (!_dbPromise){
@@ -188,7 +199,10 @@ const T = {
     footerLoaded: 'Last loaded: ', langBtn: 'العربية', unnamed: 'Unnamed', govLabel: 'Government Institution',
     popupWilayat: 'Wilayat', popupCategory: 'Type', popupStatus: 'Status', popupPhone: 'Phone', popupHours: 'Hours', popupClinics: 'Available Clinics',
     popupStaff: 'Staff', omaniLabel: 'Omani', nonOmaniLabel: 'Non-Omani',
-    directionsLabel: 'Get Directions'
+    directionsLabel: 'Get Directions', callLabel: 'Call',
+    nearMeBtn: '📍 Find Nearest to Me', nearMeBtnActive: '✕ Clear "Nearest to Me"',
+    locationError: 'Could not get your location. Please check location permission for this site.',
+    kmLabel: 'km'
   },
   ar: {
     eyebrow: 'وزارة الصحة — المديرية العامة للخدمات الصحية بمحافظة شمال الشرقية<br>دائرة التخطيط والتنظيم الصحي — قسم المؤسسات الصحية الخاصة',
@@ -205,7 +219,10 @@ const T = {
     footerLoaded: 'آخر تحديث: ', langBtn: 'English', unnamed: 'غير مسمى', govLabel: 'مؤسسة حكومية',
     popupWilayat: 'الولاية', popupCategory: 'النوع', popupStatus: 'الحالة', popupPhone: 'الهاتف', popupHours: 'ساعات العمل', popupClinics: 'العيادات المتوفرة',
     popupStaff: 'الكوادر', omaniLabel: 'عماني', nonOmaniLabel: 'غير عماني',
-    directionsLabel: 'الاتجاهات (خرائط جوجل)'
+    directionsLabel: 'الاتجاهات (خرائط جوجل)', callLabel: 'اتصال',
+    nearMeBtn: '📍 أقرب مؤسسة لي', nearMeBtnActive: '✕ إلغاء "الأقرب لي"',
+    locationError: 'تعذر تحديد موقعك. تحقق من صلاحية الموقع (Location) لهذا الموقع في المتصفح.',
+    kmLabel: 'كم'
   }
 };
 
@@ -315,6 +332,11 @@ function directionsBtn(lat, lng){
   const t = T[currentLang];
   return `<a href="${mapsDirectionsUrl(lat,lng)}" target="_blank" rel="noopener" class="popup-directions">🧭 ${t.directionsLabel}</a>`;
 }
+function callBtn(phone){
+  if (!phone) return '';
+  const t = T[currentLang];
+  return `<a href="tel:${phone}" class="popup-directions" style="background:var(--teal-500);margin-top:4px">📞 ${t.callLabel}</a>`;
+}
 function staffSummary(staffing){
   if (!staffing) return null;
   const keys = Object.keys(staffing);
@@ -330,7 +352,12 @@ function staffSummary(staffing){
 
 function render(){
   const t = T[currentLang];
-  const filtered = applyFilters();
+  let filtered = applyFilters();
+  if (userLoc){
+    filtered = filtered
+      .map(d => ({ ...d, _dist: haversineKm(userLoc.lat, userLoc.lng, d.lat, d.lng) }))
+      .sort((a,b) => a._dist - b._dist);
+  }
   document.getElementById('countPill').textContent = t.institutionsShown(filtered.length);
 
   markersLayer.clearLayers();
@@ -354,13 +381,14 @@ function render(){
       [t.popupClinics, clinicsList],
       [t.popupHours, d.working_hours ? `${d.working_days||''} ${d.working_hours}` : ''],
       [t.popupStaff, ss ? `${ss.total} (${t.omaniLabel} ${ss.omani} / ${t.nonOmaniLabel} ${ss.nonOmani})` : '']
-    ]) + directionsBtn(lat, lng));
+    ]) + directionsBtn(lat, lng) + callBtn(d.phone));
     marker.bindTooltip(primaryName, { permanent:true, direction:'top', offset:[0,-15], className:'marker-label' });
     marker.addTo(markersLayer);
 
+    const distBadge = (d._dist != null) ? ` · 📍 ${d._dist.toFixed(1)} ${t.kmLabel}` : '';
     const card = document.createElement('div');
     card.className = 'inst-card' + (d.expired ? ' expired' : '');
-    card.innerHTML = `<div class="inst-name">${displayName(d)}</div><div class="inst-meta"><span class="tag" style="background:${style.color}">${style.emoji} ${style[currentLang]}</span>${d.phone ? `📞 ${d.phone}` : ''}</div><a href="${mapsDirectionsUrl(lat,lng)}" target="_blank" rel="noopener" class="card-directions" onclick="event.stopPropagation()">🧭 ${t.directionsLabel}</a>`;
+    card.innerHTML = `<div class="inst-name">${displayName(d)}</div><div class="inst-meta"><span class="tag" style="background:${style.color}">${style.emoji} ${style[currentLang]}</span>${d.phone ? `<a href="tel:${d.phone}" onclick="event.stopPropagation()" style="color:inherit;text-decoration:none">📞 ${d.phone}</a>` : ''}${distBadge}</div><a href="${mapsDirectionsUrl(lat,lng)}" target="_blank" rel="noopener" class="card-directions" onclick="event.stopPropagation()">🧭 ${t.directionsLabel}</a>`;
     card.onclick = () => { map.setView([lat,lng], 14); marker.openPopup(); };
     cardList.appendChild(card);
   });
@@ -374,9 +402,9 @@ function render(){
     const marker = L.marker([g.lat, g.lng], { icon: makeGovIcon() }).bindPopup(popupTable(gName || t.unnamed, gNameSecondary, [
       [t.popupCategory, `🏛️ ${t.govLabel} — ${g.category||''}`],
       [t.popupWilayat, `📍 ${gWilayat||''}`],
-      ['OPD 2025', g.opd_total || ''],
+      [t.popupPhone, g.phone ? `📞 ${g.phone}` : ''],
       [t.popupStaff, gss ? `${gss.total} (${t.omaniLabel} ${gss.omani} / ${t.nonOmaniLabel} ${gss.nonOmani})` : '']
-    ]) + directionsBtn(g.lat, g.lng));
+    ]) + directionsBtn(g.lat, g.lng) + callBtn(g.phone));
     marker.bindTooltip(gName || t.unnamed, { permanent:true, direction:'top', offset:[0,-15], className:'marker-label' });
     marker.addTo(govLayer);
   });
@@ -391,6 +419,7 @@ function applyStaticText(){
   document.getElementById('detailsHeading').textContent = t.detailsHeading;
   document.getElementById('legendTitleText').textContent = t.legendTitle;
   document.getElementById('langToggle').textContent = t.langBtn;
+  updateNearMeBtn();
 }
 
 window.toggleLang = function(){
@@ -408,6 +437,30 @@ window.toggleLang = function(){
 
 window.togglePanel = function(){ document.getElementById('detailsPanel').classList.toggle('open'); }
 window.closePanel = function(){ document.getElementById('detailsPanel').classList.remove('open'); }
+
+function updateNearMeBtn(){
+  const t = T[currentLang];
+  document.getElementById('nearMeBtn').textContent = userLoc ? t.nearMeBtnActive : t.nearMeBtn;
+}
+window.findNearMe = function(){
+  const t = T[currentLang];
+  if (userLoc){
+    userLoc = null;
+    if (userMarker){ map.removeLayer(userMarker); userMarker = null; }
+    updateNearMeBtn();
+    render();
+    return;
+  }
+  if (!navigator.geolocation){ alert(t.locationError); return; }
+  navigator.geolocation.getCurrentPosition(pos => {
+    userLoc = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+    if (userMarker) map.removeLayer(userMarker);
+    userMarker = L.circleMarker([userLoc.lat, userLoc.lng], { radius:9, color:'#fff', weight:2, fillColor:'#2E86AB', fillOpacity:1 }).addTo(map);
+    map.setView([userLoc.lat, userLoc.lng], 13);
+    updateNearMeBtn();
+    render();
+  }, () => { alert(t.locationError); });
+}
 
 function updateFooter(){
   const t = T[currentLang];
