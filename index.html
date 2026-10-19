@@ -319,12 +319,18 @@ function populateFilters(data){
   document.getElementById('wilayatFilter').innerHTML = `<option value="">${t.allWilayats}</option>` + wilayats.map(w=>`<option value="${w}">${w}</option>`).join('');
 }
 
+function institutionMatchesQuery(d, q){
+  if (displayName(d).toLowerCase().includes(q)) return true;
+  if ((d.sub_category||'').toLowerCase().includes(q)) return true;
+  if (Array.isArray(d.clinics) && d.clinics.some(c => (c.specialty||'').toLowerCase().includes(q))) return true;
+  return false;
+}
 function applyFilters(){
   const q = document.getElementById('searchBox').value.trim().toLowerCase();
   const w = document.getElementById('wilayatFilter').value;
   return allData.filter(d => {
     if (d.visible === false) return false;
-    if (q && !displayName(d).toLowerCase().includes(q)) return false;
+    if (q && !institutionMatchesQuery(d, q)) return false;
     if (w && displayWilayat(d) !== w) return false;
     if (selectedSpecialty && !institutionSpecialtyKeys(d).has(selectedSpecialty)) return false;
     return true;
