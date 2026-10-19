@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+<title>الفرص الاستثمارية الصحية — محافظة شمال الشرقية</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Cairo:wght@400;600;700;800&family=IBM+Plex+Sans+Arabic:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#122023; --teal-900:#0B3D3F; --teal-700:#0F5257; --teal-500:#1B7A80;
+    --sand:#F6F3EC; --paper:#FFFFFF; --amber:#D98E36; --green:#3E8E5B; --red:#C4553B; --line:#E4DFD3; --muted:#6B7674;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:'IBM Plex Sans Arabic',sans-serif;background:var(--sand);color:var(--ink)}
+  body.lang-en{font-family:'Inter',sans-serif}
+  h1,h2,h3{font-family:'Cairo',sans-serif}
+  body.lang-en h1, body.lang-en h2, body.lang-en h3{font-family:'Inter',sans-serif}
+
+  header{background:var(--teal-900);color:#fff;padding:16px 24px}
+  .header-top{display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap;max-width:1200px;margin:0 auto}
+  .header-brand{display:flex;align-items:center;gap:12px;min-width:0}
+  .header-brand img.logo{height:40px;width:auto;background:#fff;border-radius:6px;padding:4px;flex-shrink:0}
+  .eyebrow{font-size:11.5px;letter-spacing:.02em;color:#9FCFCE;font-weight:600;line-height:1.5;display:block}
+  header h1{margin:2px 0 0;font-size:19px;font-weight:800;line-height:1.3}
+  .header-actions{display:flex;gap:8px;flex-shrink:0}
+  .btn{font-family:inherit;border:1px solid rgba(255,255,255,.4);background:rgba(255,255,255,.12);color:#fff;padding:8px 14px;border-radius:20px;font-size:12.5px;cursor:pointer;font-weight:700;white-space:nowrap}
+  .btn:hover{background:rgba(255,255,255,.24)}
+
+  .wrap{max-width:1200px;margin:0 auto;padding:26px 20px 60px}
+  section{margin-bottom:30px}
+  .section-head{margin-bottom:14px}
+  .section-head h2{font-size:17px;margin:0 0 4px;color:var(--teal-900)}
+  .section-head p{margin:0;color:var(--muted);font-size:13px;line-height:1.7}
+
+  .kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+  .kpi{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:16px 18px}
+  .kpi b{display:block;font-size:30px;color:var(--teal-900);font-family:'Cairo',sans-serif}
+  .kpi span{font-size:12px;color:var(--muted)}
+  .kpi.alert{background:#FBEBD3;border-color:#E9C27E}
+  .kpi.alert b{color:#8A4E10}
+
+  .card{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:18px}
+
+  .matrix-scroll{overflow-x:auto;border:1px solid var(--line);border-radius:12px;background:var(--paper);-webkit-overflow-scrolling:touch}
+  table.cov{border-collapse:collapse;width:100%;font-size:12px;min-width:620px}
+  table.cov th, table.cov td{padding:9px 9px;text-align:center;border-bottom:1px solid var(--line);white-space:nowrap}
+  table.cov th{background:var(--teal-900);color:#fff;font-weight:600;position:sticky;top:0}
+  table.cov td:first-child, table.cov th:first-child{text-align:start;position:sticky;inset-inline-start:0;background:var(--sand);font-weight:700;z-index:2;min-width:150px}
+  table.cov th:first-child{background:var(--teal-900);z-index:3}
+  .cell{display:inline-flex;align-items:center;justify-content:center;min-width:30px;height:24px;border-radius:6px;font-weight:700;font-size:12px}
+  .cell.gap{background:#F6E3DC;color:var(--red)}
+  .cell.low{background:#FBEBD3;color:#8A5A12}
+  .cell.ok{background:#E1F0E5;color:var(--green)}
+  .matrix-legend{display:flex;gap:14px;margin-top:10px;font-size:11.5px;color:var(--muted);flex-wrap:wrap}
+  .matrix-legend span{display:inline-flex;align-items:center;gap:5px}
+  .dot{width:11px;height:11px;border-radius:3px;display:inline-block}
+
+  .opp-list{display:grid;gap:10px}
+  .opp-row{background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:12px 16px;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+  .opp-row .opp-name{font-weight:700;font-size:14px;color:var(--teal-900)}
+  .opp-row .opp-detail{font-size:12.5px;color:var(--muted)}
+  .opp-badge{background:#F6E3DC;color:var(--red);font-size:11px;font-weight:700;padding:4px 10px;border-radius:20px;white-space:nowrap}
+
+  table.plain{width:100%;border-collapse:collapse;font-size:13px}
+  table.plain th, table.plain td{padding:9px 10px;border-bottom:1px solid var(--line);text-align:center}
+  table.plain th{background:var(--sand);color:var(--teal-900);font-weight:700}
+  table.plain td:first-child, table.plain th:first-child{text-align:start;font-weight:600}
+
+  .map-embed{border:1px solid var(--line);border-radius:12px;overflow:hidden;height:480px}
+  .map-embed iframe{width:100%;height:100%;border:none}
+  .map-link{font-size:12.5px;color:var(--teal-700);text-decoration:none;font-weight:700}
+
+  .facilitation-list{margin:0;padding-inline-start:20px;line-height:2;font-size:13.5px}
+  .facilitation-list b{color:var(--teal-900)}
+  .placeholder{color:var(--amber);font-weight:700}
+
+  footer{padding:16px 20px;color:var(--muted);font-size:11px;border-top:1px solid var(--line);text-align:center}
+
+  @media (max-width:820px){
+    .kpi-grid{grid-template-columns:repeat(2,1fr)}
+  }
+  @media print{
+    header .btn, .map-link{display:none}
+    .map-embed{display:none}
+    body{background:#fff}
+    section{page-break-inside:avoid}
+    .card, .kpi, .opp-row{box-shadow:none}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-top">
+    <div class="header-brand">
+      <img class="logo" src="moh-logo.png" alt="Ministry of Health logo">
+      <div>
+        <span class="eyebrow" id="eyebrowText"></span>
+        <h1 id="titleText"></h1>
+      </div>
+    </div>
+    <div class="header-actions">
+      <button class="btn" onclick="window.print()" id="printBtnLabel"></button>
+      <button class="btn" onclick="toggleLang()" id="langToggle"></button>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <section>
+    <div class="kpi-grid" id="kpiGrid"></div>
+  </section>
+
+  <section>
+    <div class="section-head">
+      <h2 id="matrixTitleText"></h2>
+      <p id="matrixSubText"></p>
+    </div>
+    <div class="matrix-scroll">
+      <table class="cov" id="covTable"></table>
+    </div>
+    <div class="matrix-legend">
+      <span><span class="dot" style="background:#F6E3DC"></span><span id="legendGapText"></span></span>
+      <span><span class="dot" style="background:#FBEBD3"></span><span id="legendLowText"></span></span>
+      <span><span class="dot" style="background:#E1F0E5"></span><span id="legendOkText"></span></span>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-head">
+      <h2 id="oppTitleText"></h2>
+      <p id="oppSubText"></p>
+    </div>
+    <div class="opp-list" id="oppList"></div>
+  </section>
+
+  <section>
+    <div class="section-head">
+      <h2 id="ratioTitleText"></h2>
+      <p id="ratioSubText"></p>
+    </div>
+    <div class="card">
+      <table class="plain" id="ratioTable"></table>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-head">
+      <h2 id="staffTitleText"></h2>
+      <p id="staffSubText"></p>
+    </div>
+    <div class="card">
+      <table class="plain" id="staffTable"></table>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-head">
+      <h2 id="mapTitleText"></h2>
+      <p id="mapSubText"></p>
+    </div>
+    <div class="map-embed"><iframe src="index.html" title="Interactive Health Map"></iframe></div>
+    <p style="margin-top:8px"><a class="map-link" href="index.html" target="_blank" id="mapOpenText"></a></p>
+  </section>
+
+  <section>
+    <div class="section-head">
+      <h2 id="facilitationTitleText"></h2>
+    </div>
+    <div class="card">
+      <ul class="facilitation-list" id="facilitationList"></ul>
+    </div>
+  </section>
+
+</div>
+
+<footer id="footerNote"></footer>
+
+<script type="module">
+import { firebaseConfig, FIREBASE_CONFIGURED } from './firebase-config.js';
+
+let currentLang = localStorage.getItem('healthmap_lang') || 'ar';
+let privateData = [];
+let govData = [];
+
+// ===== Editable: fill in real population figures (from NCSI census) per wilayat when available =====
+// Leave a wilayat as null if the figure is not yet confirmed — the page will show "—" instead of guessing.
+const POPULATION = {
+  'Ibra': null,
+  'Al Mudhaibi': null,
+  'Bidiya': null,
+  'Al Qabil': null,
+  'Sinaw': null,
+  'Dima Wa Al Tayeen': null,
+  'Wadi Bani Khalid': null
+};
+
+const WILAYATS = [
+  { en:'Ibra', ar:'إبراء' },
+  { en:'Al Mudhaibi', ar:'المضيبي' },
+  { en:'Bidiya', ar:'بدية' },
+  { en:'Al Qabil', ar:'القابل' },
+  { en:'Sinaw', ar:'سناو' },
+  { en:'Dima Wa Al Tayeen', ar:'دماء والطائيين' },
+  { en:'Wadi Bani Khalid', ar:'وادي بني خالد' }
+];
+
+const CATEGORY_STYLES = [
+  { key:'dental', test: s => s.includes('dental') || s.includes('اسنان') || s.includes('أسنان'), emoji:'🦷', en:'Dental', ar:'أسنان' },
+  { key:'optical', test: s => s.includes('optical') || s.includes('eye') || s.includes('عيون') || s.includes('عين') || s.includes('بصريات'), emoji:'👓', en:'Optical / Eye', ar:'بصريات وعيون' },
+  { key:'women', test: s => s.includes('women') || s.includes('gynae') || s.includes('gyneco') || s.includes('obstetric') || s.includes('maternity') || s.includes('نساء') || s.includes('ولادة'), emoji:'🤰', en:'Women & Maternity', ar:'نساء وولادة' },
+  { key:'pediatrics', test: s => s.includes('pediatric') || s.includes('paediatric') || s.includes('child') || s.includes('اطفال') || s.includes('أطفال'), emoji:'🧒', en:'Pediatrics', ar:'أطفال' },
+  { key:'dermatology', test: s => s.includes('skin') || s.includes('derma') || s.includes('جلد'), emoji:'🧴', en:'Dermatology', ar:'جلدية' },
+  { key:'internal', test: s => s.includes('internal') || s.includes('باطن'), emoji:'🩺', en:'Internal Medicine', ar:'باطنية' },
+  { key:'ortho', test: s => s.includes('ortho') || s.includes('عظام'), emoji:'🦴', en:'Orthopedics', ar:'عظام' },
+  { key:'physio', test: s => s.includes('physio') || s.includes('طبيعي'), emoji:'🏃', en:'Physiotherapy', ar:'علاج طبيعي' },
+  { key:'lab', test: s => s.includes('lab') || s.includes('diagnos') || s.includes('radiol') || s.includes('x-ray') || s.includes('scan') || s.includes('مختبر') || s.includes('تحليل') || s.includes('تحاليل') || s.includes('اشعة') || s.includes('أشعة'), emoji:'🧪', en:'Diagnostics / Lab', ar:'مختبر وتشخيص' },
+  { key:'pharmacy', test: s => s.includes('pharmac') || s.includes('صيدل'), emoji:'💊', en:'Pharmacy', ar:'صيدلية' },
+  { key:'vaccination', test: s => s.includes('vaccin') || s.includes('تحصين') || s.includes('تطعيم'), emoji:'💉', en:'Vaccination', ar:'تحصينات' },
+  { key:'polyclinic', test: s => s.includes('polyclinic') || s.includes('center') || s.includes('centre') || s.includes('complex') || s.includes('مجمع'), emoji:'🏥', en:'Polyclinic / Center', ar:'مجمع صحي' },
+];
+const DEFAULT_STYLE = { key:'general', test: () => false, emoji:'➕', en:'General Clinic', ar:'عيادة عامة' };
+const ALL_STYLES = CATEGORY_STYLES.concat([DEFAULT_STYLE]);
+
+const T = {
+  en: {
+    eyebrow: 'Ministry of Health — Directorate General of Health Services, North Al Sharqiyah Governorate',
+    title: 'Private Health Sector — Investment Opportunity Brief',
+    printBtn: '🖨️ Print / Save as PDF', langBtn: 'العربية',
+    kpiTotal: 'Private Institutions', kpiWilayatsCovered: 'Wilayats with Private Coverage',
+    kpiZeroWilayats: 'Wilayats with Zero Coverage', kpiGaps: 'Total Service Gaps Identified',
+    matrixTitle: 'Service Coverage Gap Matrix', matrixSub: 'Number of active private institutions offering each service type, by wilayat. Red cells are complete gaps — direct investment opportunities.',
+    legendGap: 'No provider (opportunity)', legendLow: 'Limited (1–2)', legendOk: 'Adequate (3+)',
+    oppTitle: 'Headline Opportunities', oppSub: 'Automatically generated from the gap matrix above — highest-priority gaps first.',
+    oppAllGaps: n => `${n} service type(s) with zero private provider`,
+    ratioTitle: 'Private vs. Government Facilities by Wilayat', ratioSub: 'Where government capacity is not matched by private alternatives, demand may be going unmet.',
+    staffTitle: 'Health Workforce Snapshot by Wilayat', staffSub: 'Aggregated staffing counts reported by institutions (private + government) in each wilayat.',
+    mapTitle: 'Interactive Map', mapSub: 'Full live map of all institutions, searchable by wilayat and service type.',
+    mapOpen: 'Open full-screen map in a new tab →',
+    facilitationTitle: 'Investment Facilitation',
+    footer: 'Data sourced from the Interactive Health Map platform (Firestore) · Generated: ',
+    colWilayat: 'Wilayat', colPrivate: 'Private', colGov: 'Government', colPopulation: 'Population', colPerFacility: 'Population per Private Facility',
+    colStaffTotal: 'Total Staff', colStaffOmani: 'Omani', colStaffNonOmani: 'Non-Omani',
+    notAvailable: '—'
+  },
+  ar: {
+    eyebrow: 'وزارة الصحة — المديرية العامة للخدمات الصحية بمحافظة شمال الشرقية',
+    title: 'القطاع الصحي الخاص — موجز الفرص الاستثمارية',
+    printBtn: '🖨️ طباعة / حفظ PDF', langBtn: 'English',
+    kpiTotal: 'مؤسسة صحية خاصة', kpiWilayatsCovered: 'ولايات بها تغطية خاصة',
+    kpiZeroWilayats: 'ولايات بدون أي تغطية', kpiGaps: 'إجمالي الفجوات الخدمية',
+    matrixTitle: 'مصفوفة فجوات التغطية الخدمية', matrixSub: 'عدد المؤسسات الخاصة النشطة التي تقدّم كل نوع خدمة، حسب الولاية. الخلايا الحمراء تمثّل فجوة كاملة — فرصة استثمارية مباشرة.',
+    legendGap: 'لا يوجد مزوّد (فرصة)', legendLow: 'محدودة (1-2)', legendOk: 'جيدة (3+)',
+    oppTitle: 'أبرز الفرص الاستثمارية', oppSub: 'مُولّدة تلقائياً من مصفوفة الفجوات أعلاه — الفجوات الأعلى أولوية أولاً.',
+    oppAllGaps: n => `${n} نوع خدمة بدون أي مزوّد خاص`,
+    ratioTitle: 'المؤسسات الخاصة مقابل الحكومية حسب الولاية', ratioSub: 'حيث لا تقابل الطاقة الحكومية بدائل خاصة، قد يكون هناك طلب غير ملبّى.',
+    staffTitle: 'لمحة عن الكوادر الصحية حسب الولاية', staffSub: 'إجمالي أعداد الكوادر المُدخلة من المؤسسات (الخاصة والحكومية) في كل ولاية.',
+    mapTitle: 'الخريطة التفاعلية', mapSub: 'خريطة حية لجميع المؤسسات، قابلة للبحث حسب الولاية ونوع الخدمة.',
+    mapOpen: 'فتح الخريطة بملء الشاشة في نافذة جديدة ←',
+    facilitationTitle: 'تسهيلات الاستثمار',
+    footer: 'البيانات مستخرجة من منصة الخريطة الصحية التفاعلية (Firestore) · تاريخ الإنشاء: ',
+    colWilayat: 'الولاية', colPrivate: 'خاص', colGov: 'حكومي', colPopulation: 'عدد السكان', colPerFacility: 'عدد السكان لكل مؤسسة خاصة',
+    colStaffTotal: 'إجمالي الكوادر', colStaffOmani: 'عماني', colStaffNonOmani: 'غير عماني',
+    notAvailable: '—'
+  }
+};
+
+async function loadFirestoreCollection(name){
+  const { initializeApp } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js');
+  const { getFirestore, collection, getDocs } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js');
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+  const snap = await getDocs(collection(db, name));
+  return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+}
+function loadLocalData(){ return fetch('institutions.json').then(r => r.json()); }
+
+function displayWilayat(d, lang){ return lang==='ar' ? (d.wilayat_ar||d.wilayat_en||'') : (d.wilayat_en||d.wilayat_ar||''); }
+
+function getCategoryStyle(d){
+  const s = ((d.sub_category||'') + ' ' + (d.category||'')).toLowerCase();
+  return CATEGORY_STYLES.find(c => c.test(s)) || DEFAULT_STYLE;
+}
+function styleForText(s){ return CATEGORY_STYLES.find(c => c.test((s||'').toLowerCase())) || null; }
+function institutionSpecialtyKeys(d){
+  const keys = new Set([getCategoryStyle(d).key]);
+  if (Array.isArray(d.clinics)){
+    d.clinics.forEach(c => { const st = styleForText(c.specialty); if (st) keys.add(st.key); });
+  }
+  return keys;
+}
+function activePrivate(){
+  return privateData.filter(d => d.visible !== false && !d.expired);
+}
+function staffSum(staffing){
+  if (!staffing) return { total:0, omani:0, nonOmani:0 };
+  let omani=0, nonOmani=0, total=0;
+  Object.keys(staffing).forEach(k => {
+    const v = parseInt(staffing[k]) || 0;
+    total += v;
+    if (k.endsWith('_nonom')) nonOmani += v; else omani += v;
+  });
+  return { total, omani, nonOmani };
+}
+
+function buildKpis(){
+  const t = T[currentLang];
+  const active = activePrivate();
+  const wilayatsCovered = new Set(active.map(d => d.wilayat_en)).size;
+  const zeroWilayats = WILAYATS.filter(w => !active.some(d => d.wilayat_en === w.en));
+  let gapCount = 0;
+  WILAYATS.forEach(w => {
+    ALL_STYLES.forEach(c => {
+      const count = active.filter(d => d.wilayat_en === w.en && institutionSpecialtyKeys(d).has(c.key)).length;
+      if (count === 0) gapCount++;
+    });
+  });
+  const kpis = [
+    { label: t.kpiTotal, value: active.length, alert:false },
+    { label: t.kpiWilayatsCovered, value: `${wilayatsCovered} / ${WILAYATS.length}`, alert:false },
+    { label: t.kpiZeroWilayats, value: zeroWilayats.length, alert: zeroWilayats.length>0 },
+    { label: t.kpiGaps, value: gapCount, alert: gapCount>0 }
+  ];
+  document.getElementById('kpiGrid').innerHTML = kpis.map(k => `<div class="kpi${k.alert?' alert':''}"><b>${k.value}</b><span>${k.label}</span></div>`).join('');
+}
+
+function buildMatrix(){
+  const t = T[currentLang];
+  const active = activePrivate();
+  const table = document.getElementById('covTable');
+  const thead = `<tr><th>${t.matrixTitle.split(' ')[0]}</th>` + WILAYATS.map(w => `<th>${currentLang==='ar'?w.ar:w.en}</th>`).join('') + '</tr>';
+  const rows = ALL_STYLES.map(style => {
+    const cells = WILAYATS.map(w => {
+      const count = active.filter(d => d.wilayat_en === w.en && institutionSpecialtyKeys(d).has(style.key)).length;
+      const cls = count===0 ? 'gap' : (count<=2 ? 'low' : 'ok');
+      return `<td><span class="cell ${cls}">${count}</span></td>`;
+    }).join('');
+    return `<tr><td>${style.emoji} ${currentLang==='ar'?style.ar:style.en}</td>${cells}</tr>`;
+  }).join('');
+  table.innerHTML = thead + rows;
+}
+
+function buildOpportunities(){
+  const t = T[currentLang];
+  const active = activePrivate();
+  const rows = WILAYATS.map(w => {
+    const gaps = ALL_STYLES.filter(style => active.filter(d => d.wilayat_en === w.en && institutionSpecialtyKeys(d).has(style.key)).length === 0);
+    return { wilayat: w, gaps };
+  }).filter(r => r.gaps.length > 0).sort((a,b) => b.gaps.length - a.gaps.length);
+
+  document.getElementById('oppList').innerHTML = rows.map(r => `
+    <div class="opp-row">
+      <div>
+        <div class="opp-name">${currentLang==='ar'?r.wilayat.ar:r.wilayat.en}</div>
+        <div class="opp-detail">${r.gaps.map(g => `${g.emoji} ${currentLang==='ar'?g.ar:g.en}`).join(' · ')}</div>
+      </div>
+      <span class="opp-badge">${t.oppAllGaps(r.gaps.length)}</span>
+    </div>`).join('') || `<div class="opp-row">${t.notAvailable}</div>`;
+}
+
+function buildRatioTable(){
+  const t = T[currentLang];
+  const active = activePrivate();
+  const activeGov = govData.filter(g => g.visible !== false);
+  const header = `<tr><th>${t.colWilayat}</th><th>${t.colPrivate}</th><th>${t.colGov}</th><th>${t.colPopulation}</th><th>${t.colPerFacility}</th></tr>`;
+  const rows = WILAYATS.map(w => {
+    const priv = active.filter(d => d.wilayat_en === w.en).length;
+    const gov = activeGov.filter(g => g.wilayat_en === w.en).length;
+    const pop = POPULATION[w.en];
+    const perFacility = (pop && priv > 0) ? Math.round(pop / priv).toLocaleString() : t.notAvailable;
+    return `<tr><td>${currentLang==='ar'?w.ar:w.en}</td><td>${priv}</td><td>${gov}</td><td>${pop ? pop.toLocaleString() : t.notAvailable}</td><td>${perFacility}</td></tr>`;
+  }).join('');
+  document.getElementById('ratioTable').innerHTML = header + rows;
+}
+
+function buildStaffTable(){
+  const t = T[currentLang];
+  const activeGov = govData.filter(g => g.visible !== false);
+  const header = `<tr><th>${t.colWilayat}</th><th>${t.colStaffTotal}</th><th>${t.colStaffOmani}</th><th>${t.colStaffNonOmani}</th></tr>`;
+  const rows = WILAYATS.map(w => {
+    const all = [...privateData.filter(d => d.wilayat_en === w.en && d.visible !== false), ...activeGov.filter(g => g.wilayat_en === w.en)];
+    let total=0, omani=0, nonOmani=0;
+    all.forEach(d => { const s = staffSum(d.staffing); total+=s.total; omani+=s.omani; nonOmani+=s.nonOmani; });
+    return `<tr><td>${currentLang==='ar'?w.ar:w.en}</td><td>${total}</td><td>${omani}</td><td>${nonOmani}</td></tr>`;
+  }).join('');
+  document.getElementById('staffTable').innerHTML = header + rows;
+}
+
+function buildFacilitation(){
+  const items = currentLang === 'ar' ? [
+    '<b>جهة التواصل:</b> <span class="placeholder">[الاسم / القسم المختص بترخيص الاستثمار الصحي]</span>',
+    '<b>الهاتف / البريد:</b> <span class="placeholder">[يُستكمل من مكتب المحافظ]</span>',
+    '<b>خطوات الترخيص:</b> <span class="placeholder">[ملخص خطوات الحصول على ترخيص مؤسسة صحية خاصة من وزارة الصحة]</span>',
+    '<b>الحوافز المتاحة:</b> <span class="placeholder">[إن وُجدت حوافز استثمارية من المحافظة]</span>'
+  ] : [
+    '<b>Contact point:</b> <span class="placeholder">[Name / department for health investment licensing]</span>',
+    '<b>Phone / Email:</b> <span class="placeholder">[To be completed by the Governor\'s Office]</span>',
+    '<b>Licensing steps:</b> <span class="placeholder">[Summary of MOH private health facility licensing process]</span>',
+    '<b>Available incentives:</b> <span class="placeholder">[If any governorate-level investment incentives exist]</span>'
+  ];
+  document.getElementById('facilitationList').innerHTML = items.map(i => `<li>${i}</li>`).join('');
+}
+
+function applyStaticText(){
+  const t = T[currentLang];
+  document.getElementById('eyebrowText').textContent = t.eyebrow;
+  document.getElementById('titleText').textContent = t.title;
+  document.getElementById('printBtnLabel').textContent = t.printBtn;
+  document.getElementById('langToggle').textContent = t.langBtn;
+  document.getElementById('matrixTitleText').textContent = t.matrixTitle;
+  document.getElementById('matrixSubText').textContent = t.matrixSub;
+  document.getElementById('legendGapText').textContent = t.legendGap;
+  document.getElementById('legendLowText').textContent = t.legendLow;
+  document.getElementById('legendOkText').textContent = t.legendOk;
+  document.getElementById('oppTitleText').textContent = t.oppTitle;
+  document.getElementById('oppSubText').textContent = t.oppSub;
+  document.getElementById('ratioTitleText').textContent = t.ratioTitle;
+  document.getElementById('ratioSubText').textContent = t.ratioSub;
+  document.getElementById('staffTitleText').textContent = t.staffTitle;
+  document.getElementById('staffSubText').textContent = t.staffSub;
+  document.getElementById('mapTitleText').textContent = t.mapTitle;
+  document.getElementById('mapSubText').textContent = t.mapSub;
+  document.getElementById('mapOpenText').textContent = t.mapOpen;
+  document.getElementById('facilitationTitleText').textContent = t.facilitationTitle;
+  document.getElementById('footerNote').textContent = t.footer + new Date().toLocaleDateString(currentLang==='ar'?'ar-OM':'en-GB');
+}
+
+function renderAll(){
+  applyStaticText();
+  buildKpis();
+  buildMatrix();
+  buildOpportunities();
+  buildRatioTable();
+  buildStaffTable();
+  buildFacilitation();
+}
+
+window.toggleLang = function(){
+  currentLang = currentLang === 'en' ? 'ar' : 'en';
+  localStorage.setItem('healthmap_lang', currentLang);
+  document.documentElement.lang = currentLang;
+  document.documentElement.dir = currentLang === 'ar' ? 'rtl' : 'ltr';
+  document.body.classList.toggle('lang-en', currentLang === 'en');
+  renderAll();
+}
+
+async function boot(){
+  document.documentElement.lang = currentLang;
+  document.documentElement.dir = currentLang === 'ar' ? 'rtl' : 'ltr';
+  document.body.classList.toggle('lang-en', currentLang === 'en');
+  try{
+    privateData = FIREBASE_CONFIGURED ? await loadFirestoreCollection('institutions') : await loadLocalData();
+  }catch(e){ console.error(e); privateData = await loadLocalData(); }
+  try{ govData = FIREBASE_CONFIGURED ? await loadFirestoreCollection('gov_institutions') : []; }catch(e){ govData = []; }
+  renderAll();
+}
+
+boot();
+</script>
+</body>
+</html>
