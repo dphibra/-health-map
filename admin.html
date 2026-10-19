@@ -120,16 +120,17 @@
     <div class="sector-tabs">
       <button class="tab-btn active" id="tabPrivateBtn" onclick="switchTab('private')">🏥 القطاع الخاص</button>
       <button class="tab-btn" id="tabGovBtn" onclick="switchTab('government')">🏛️ القطاع الحكومي</button>
+      <button class="tab-btn" id="tabWstatsBtn" onclick="switchTab('wstats')">📊 بيانات الولايات</button>
     </div>
 
-    <div class="stat-row">
+    <div class="stat-row" id="statRow">
       <div class="stat"><b id="statTotal">—</b><span>إجمالي السجلات</span></div>
       <div class="stat"><b id="statVisible">—</b><span>ظاهرة على الموقع</span></div>
       <div class="stat"><b id="statReview">—</b><span>مواقع تحتاج مراجعة</span></div>
       <div class="stat" id="statExpiredBox"><b id="statExpired">—</b><span>تراخيص منتهية</span></div>
     </div>
 
-    <div class="card">
+    <div class="card" id="recordsCard">
       <div class="toolbar">
         <div class="filters">
           <input id="fSearch" placeholder="🔍 بحث بالاسم">
@@ -156,6 +157,20 @@
           <tbody id="tbody"></tbody>
         </table>
       </div>
+    </div>
+
+    <div id="wstatsArea" class="card" style="display:none">
+      <h3 style="margin-top:0">بيانات يدوية حسب الولاية</h3>
+      <p style="font-size:12.5px;color:var(--muted);margin:-6px 0 14px">هذي الأرقام تُدخل يدوياً (من المركز الوطني للإحصاء أو جهات أخرى) وتُستخدم في صفحة "الفرص الاستثمارية" (opportunities.html) لحساب مؤشرات مثل عدد السكان لكل مؤسسة خاصة.</p>
+      <div style="overflow-x:auto">
+        <table>
+          <thead>
+            <tr><th>الولاية</th><th>عدد السكان</th><th>عدد الصيدليات (يدوي)</th></tr>
+          </thead>
+          <tbody id="wstatsBody"></tbody>
+        </table>
+      </div>
+      <div style="margin-top:14px"><button onclick="saveWstats()">حفظ بيانات الولايات</button></div>
     </div>
   </div>
 </div>
@@ -238,11 +253,20 @@
         <div class="field"><label>متوسط الزيارات اليومي (أيام العمل)</label><input id="f_avg_working" type="number"></div>
         <div class="field"><label>متوسط الزيارات (نهاية الأسبوع)</label><input id="f_avg_weekend" type="number"></div>
       </div>
-      <div class="field">
-        <label>الزيارات حسب العيادة (Clinic-wise)</label>
-        <div id="visitsList"></div>
-        <button type="button" class="ghost small" onclick="addVisitRow()">+ إضافة عيادة وزياراتها</button>
-      </div>
+      <div class="section-title" style="margin-top:4px">مؤشرات الزيارات حسب نوع الخدمة</div>
+      <p style="font-size:12px;color:var(--muted);margin:-4px 0 8px">عدد الزيارات لكل نوع خدمة. اتركها صفر إذا لم تتوفر.</p>
+      <table style="width:100%;border-collapse:collapse;font-size:12.5px;margin-bottom:10px">
+        <tbody>
+          <tr><td style="padding:4px 6px">طب عام</td><td style="padding:4px 6px"><input id="f_visits_general" type="number" min="0" value="0"></td></tr>
+          <tr><td style="padding:4px 6px">نساء</td><td style="padding:4px 6px"><input id="f_visits_women" type="number" min="0" value="0"></td></tr>
+          <tr><td style="padding:4px 6px">أطفال</td><td style="padding:4px 6px"><input id="f_visits_children" type="number" min="0" value="0"></td></tr>
+          <tr><td style="padding:4px 6px">تحصينات</td><td style="padding:4px 6px"><input id="f_visits_vaccination" type="number" min="0" value="0"></td></tr>
+          <tr><td style="padding:4px 6px">أسنان</td><td style="padding:4px 6px"><input id="f_visits_dental" type="number" min="0" value="0"></td></tr>
+          <tr><td style="padding:4px 6px">علاج طبيعي</td><td style="padding:4px 6px"><input id="f_visits_physio" type="number" min="0" value="0"></td></tr>
+          <tr><td style="padding:4px 6px">إجمالي الفحوصات المختبرية</td><td style="padding:4px 6px"><input id="f_visits_lab_total" type="number" min="0" value="0"></td></tr>
+          <tr><td style="padding:4px 6px">الأشعة</td><td style="padding:4px 6px"><input id="f_visits_xray" type="number" min="0" value="0"></td></tr>
+        </tbody>
+      </table>
     </div>
 
     <!-- ===== موقع المؤسسة ===== -->
@@ -448,14 +472,64 @@ if (FIREBASE_CONFIGURED){
 
 // ---------- Tabs ----------
 window.switchTab = function(tab){
-  activeCollection = tab === 'government' ? 'gov_institutions' : 'institutions';
   document.getElementById('tabPrivateBtn').classList.toggle('active', tab === 'private');
   document.getElementById('tabGovBtn').classList.toggle('active', tab === 'government');
+  document.getElementById('tabWstatsBtn').classList.toggle('active', tab === 'wstats');
+
+  if (tab === 'wstats'){
+    document.getElementById('statRow').style.display = 'none';
+    document.getElementById('recordsCard').style.display = 'none';
+    document.getElementById('wstatsArea').style.display = '';
+    loadWstats();
+    return;
+  }
+  document.getElementById('statRow').style.display = '';
+  document.getElementById('recordsCard').style.display = '';
+  document.getElementById('wstatsArea').style.display = 'none';
+
+  activeCollection = tab === 'government' ? 'gov_institutions' : 'institutions';
   document.getElementById('bulkImportBtn').style.display = tab === 'private' ? '' : 'none';
   document.getElementById('addBtnLabel').textContent = tab === 'private' ? '+ إضافة مؤسسة خاصة' : '+ إضافة مؤسسة حكومية';
   document.getElementById('statExpiredBox').style.display = tab === 'private' ? '' : 'none';
   refreshData();
 }
+
+// ---------- Wilayat stats (manual data) ----------
+function wstatsRowHTML(w){
+  return `<tr>
+    <td>${w.ar} (${w.en})</td>
+    <td><input id="f_wstat_pop_${w.en}" type="number" min="0" placeholder="—"></td>
+    <td><input id="f_wstat_pharm_${w.en}" type="number" min="0" placeholder="—"></td>
+  </tr>`;
+}
+document.getElementById('wstatsBody').innerHTML = WILAYATS.map(wstatsRowHTML).join('');
+
+async function loadWstats(){
+  const snap = await getDocs(collection(db, 'wilayat_stats'));
+  const byId = {};
+  snap.docs.forEach(d => { byId[d.id] = d.data(); });
+  WILAYATS.forEach(w => {
+    const data = byId[w.en] || {};
+    const popEl = document.getElementById('f_wstat_pop_'+w.en);
+    const pharmEl = document.getElementById('f_wstat_pharm_'+w.en);
+    if (popEl) popEl.value = data.population ?? '';
+    if (pharmEl) pharmEl.value = data.pharmacy_count ?? '';
+  });
+}
+
+window.saveWstats = async function(){
+  for (const w of WILAYATS){
+    const pop = document.getElementById('f_wstat_pop_'+w.en).value;
+    const pharm = document.getElementById('f_wstat_pharm_'+w.en).value;
+    await setDoc(doc(db, 'wilayat_stats', w.en), {
+      wilayat_en: w.en,
+      wilayat_ar: w.ar,
+      population: pop !== '' ? parseInt(pop) : null,
+      pharmacy_count: pharm !== '' ? parseInt(pharm) : null
+    });
+  }
+  alert('تم حفظ بيانات الولايات بنجاح.');
+};
 
 // ---------- Data ----------
 async function refreshData(){
@@ -593,15 +667,21 @@ function clinicRowHTML(c={}){
 }
 window.addClinicRow = function(data){ document.getElementById('clinicsList').insertAdjacentHTML('beforeend', clinicRowHTML(data||{})); }
 
-// ---------- Repeatable clinic-visit rows (government) ----------
-function visitRowHTML(v={}){
-  return `<div class="repeat-row">
-    <input class="v-clinic" placeholder="اسم العيادة" value="${v.clinic||''}">
-    <input class="v-visits" type="number" placeholder="عدد الزيارات" value="${v.visits!=null?v.visits:''}">
-    <button type="button" class="danger small" onclick="this.parentElement.remove()">×</button>
-  </div>`;
+// ---------- Visit indicators (government, fixed categories) ----------
+const VISIT_FIELDS = ['general','women','children','vaccination','dental','physio','lab_total','xray'];
+function resetVisitFields(){
+  VISIT_FIELDS.forEach(f => { const el = document.getElementById('f_visits_'+f); if (el) el.value = 0; });
 }
-window.addVisitRow = function(data){ document.getElementById('visitsList').insertAdjacentHTML('beforeend', visitRowHTML(data||{})); }
+function collectVisitFields(){
+  const visits = {};
+  VISIT_FIELDS.forEach(f => { visits[f] = parseInt(document.getElementById('f_visits_'+f).value) || 0; });
+  return visits;
+}
+function fillVisitFields(visits){
+  resetVisitFields();
+  if (!visits) return;
+  VISIT_FIELDS.forEach(f => { const el = document.getElementById('f_visits_'+f); if (el && visits[f] != null) el.value = visits[f]; });
+}
 
 // ---------- Staffing (shared private + government) ----------
 const STAFF_FIELDS = ['dentist_om','dentist_nonom','denttech_om','denttech_nonom','radtech_om','radtech_nonom','labtech_om','labtech_nonom','optometrist_om','optometrist_nonom','dresser_om','dresser_nonom','nurse_om','nurse_nonom','laser_om','laser_nonom','physio_om','physio_nonom','reception_om','admin_om'];
@@ -640,7 +720,7 @@ window.openModal = function(){
   document.getElementById('f_category_gov').value = 'Health Center';
   document.getElementById('f_visible').checked = true;
   document.getElementById('clinicsList').innerHTML = '';
-  document.getElementById('visitsList').innerHTML = '';
+  resetVisitFields();
   resetStaffFields();
   updateModalFieldsVisibility();
   document.getElementById('modalBg').classList.add('show');
@@ -677,9 +757,7 @@ window.editRecord = function(id){
   document.getElementById('clinicsList').innerHTML = '';
   (d.clinics||[]).forEach(c => window.addClinicRow(c));
 
-  document.getElementById('visitsList').innerHTML = '';
-  (d.clinic_visits||[]).forEach(v => window.addVisitRow(v));
-
+  fillVisitFields(d.visits);
   fillStaffFields(d.staffing);
 
   updateModalFieldsVisibility();
@@ -711,17 +789,13 @@ window.saveRecord = async function(){
 
   let payload;
   if (isGov){
-    const clinic_visits = [...document.querySelectorAll('#visitsList .repeat-row')].map(row => ({
-      clinic: row.querySelector('.v-clinic').value.trim(),
-      visits: parseInt(row.querySelector('.v-visits').value) || 0
-    })).filter(v => v.clinic);
     payload = {
       ...base,
       category: document.getElementById('f_category_gov').value,
       opd_total: parseInt(document.getElementById('f_opd_total').value) || 0,
       avg_working_day: parseFloat(document.getElementById('f_avg_working').value) || 0,
       avg_weekend: parseFloat(document.getElementById('f_avg_weekend').value) || 0,
-      clinic_visits
+      visits: collectVisitFields()
     };
   } else {
     const clinics = [...document.querySelectorAll('#clinicsList .repeat-row')].map(row => ({
@@ -800,7 +874,14 @@ window.exportToExcel = function(){
       'Total OPD Attendance 2025': d.opd_total ?? '',
       'Avg Visits / Working Day': d.avg_working_day ?? '',
       'Avg Visits / Weekend': d.avg_weekend ?? '',
-      'Visits by Clinic': (d.clinic_visits||[]).map(v=>`${v.clinic}: ${v.visits}`).join('; '),
+      'Visits - General Medicine': d.visits?.general ?? 0,
+      'Visits - Women': d.visits?.women ?? 0,
+      'Visits - Children': d.visits?.children ?? 0,
+      'Visits - Vaccination': d.visits?.vaccination ?? 0,
+      'Visits - Dental': d.visits?.dental ?? 0,
+      'Visits - Physiotherapy': d.visits?.physio ?? 0,
+      'Total Lab Tests': d.visits?.lab_total ?? 0,
+      'Radiology (X-ray)': d.visits?.xray ?? 0,
       ...staffCols(d),
       'Latitude': d.lat, 'Longitude': d.lng,
       'Visible': d.visible !== false ? 'Yes' : 'No'
