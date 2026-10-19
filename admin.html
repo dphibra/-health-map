@@ -299,6 +299,31 @@
           <td style="padding:4px 6px"><input id="f_staff_labtech_nonom" type="number" min="0" value="0"></td>
         </tr>
         <tr>
+          <td style="padding:4px 6px">فاحص نظر</td>
+          <td style="padding:4px 6px"><input id="f_staff_optometrist_om" type="number" min="0" value="0"></td>
+          <td style="padding:4px 6px"><input id="f_staff_optometrist_nonom" type="number" min="0" value="0"></td>
+        </tr>
+        <tr>
+          <td style="padding:4px 6px">مضمد</td>
+          <td style="padding:4px 6px"><input id="f_staff_dresser_om" type="number" min="0" value="0"></td>
+          <td style="padding:4px 6px"><input id="f_staff_dresser_nonom" type="number" min="0" value="0"></td>
+        </tr>
+        <tr>
+          <td style="padding:4px 6px">ممرض</td>
+          <td style="padding:4px 6px"><input id="f_staff_nurse_om" type="number" min="0" value="0"></td>
+          <td style="padding:4px 6px"><input id="f_staff_nurse_nonom" type="number" min="0" value="0"></td>
+        </tr>
+        <tr>
+          <td style="padding:4px 6px">فني ليزر</td>
+          <td style="padding:4px 6px"><input id="f_staff_laser_om" type="number" min="0" value="0"></td>
+          <td style="padding:4px 6px"><input id="f_staff_laser_nonom" type="number" min="0" value="0"></td>
+        </tr>
+        <tr>
+          <td style="padding:4px 6px">فني علاج طبيعي</td>
+          <td style="padding:4px 6px"><input id="f_staff_physio_om" type="number" min="0" value="0"></td>
+          <td style="padding:4px 6px"><input id="f_staff_physio_nonom" type="number" min="0" value="0"></td>
+        </tr>
+        <tr>
           <td style="padding:4px 6px">موظف استقبال (عماني)</td>
           <td style="padding:4px 6px" colspan="2"><input id="f_staff_reception_om" type="number" min="0" value="0"></td>
         </tr>
@@ -579,7 +604,7 @@ function visitRowHTML(v={}){
 window.addVisitRow = function(data){ document.getElementById('visitsList').insertAdjacentHTML('beforeend', visitRowHTML(data||{})); }
 
 // ---------- Staffing (shared private + government) ----------
-const STAFF_FIELDS = ['dentist_om','dentist_nonom','denttech_om','denttech_nonom','radtech_om','radtech_nonom','labtech_om','labtech_nonom','reception_om','admin_om'];
+const STAFF_FIELDS = ['dentist_om','dentist_nonom','denttech_om','denttech_nonom','radtech_om','radtech_nonom','labtech_om','labtech_nonom','optometrist_om','optometrist_nonom','dresser_om','dresser_nonom','nurse_om','nurse_nonom','laser_om','laser_nonom','physio_om','physio_nonom','reception_om','admin_om'];
 function resetStaffFields(){
   STAFF_FIELDS.forEach(f => { const el = document.getElementById('f_staff_'+f); if (el) el.value = 0; });
 }
@@ -745,6 +770,11 @@ window.exportToExcel = function(){
       'Dental Tech (Omani)': s.denttech_om ?? 0, 'Dental Tech (Non-Omani)': s.denttech_nonom ?? 0,
       'Radiology Tech (Omani)': s.radtech_om ?? 0, 'Radiology Tech (Non-Omani)': s.radtech_nonom ?? 0,
       'Lab Tech (Omani)': s.labtech_om ?? 0, 'Lab Tech (Non-Omani)': s.labtech_nonom ?? 0,
+      'Optometrist (Omani)': s.optometrist_om ?? 0, 'Optometrist (Non-Omani)': s.optometrist_nonom ?? 0,
+      'Dresser (Omani)': s.dresser_om ?? 0, 'Dresser (Non-Omani)': s.dresser_nonom ?? 0,
+      'Nurse (Omani)': s.nurse_om ?? 0, 'Nurse (Non-Omani)': s.nurse_nonom ?? 0,
+      'Laser Tech (Omani)': s.laser_om ?? 0, 'Laser Tech (Non-Omani)': s.laser_nonom ?? 0,
+      'Physiotherapy Tech (Omani)': s.physio_om ?? 0, 'Physiotherapy Tech (Non-Omani)': s.physio_nonom ?? 0,
       'Receptionist (Omani)': s.reception_om ?? 0, 'Admin Staff (Omani)': s.admin_om ?? 0
     };
   };

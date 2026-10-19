@@ -260,6 +260,19 @@ function getCategoryStyle(d){
   const s = ((d.sub_category||'') + ' ' + (d.category||'')).toLowerCase();
   return CATEGORY_STYLES.find(c => c.test(s)) || DEFAULT_STYLE;
 }
+function styleForText(s){
+  return CATEGORY_STYLES.find(c => c.test((s||'').toLowerCase())) || null;
+}
+function institutionSpecialtyKeys(d){
+  const keys = new Set([getCategoryStyle(d).key]);
+  if (Array.isArray(d.clinics)){
+    d.clinics.forEach(c => {
+      const style = styleForText(c.specialty);
+      if (style) keys.add(style.key);
+    });
+  }
+  return keys;
+}
 function svgIcon(inner){
   return `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${inner}</svg>`;
 }
@@ -313,7 +326,7 @@ function applyFilters(){
     if (d.visible === false) return false;
     if (q && !displayName(d).toLowerCase().includes(q)) return false;
     if (w && displayWilayat(d) !== w) return false;
-    if (selectedSpecialty && getCategoryStyle(d).key !== selectedSpecialty) return false;
+    if (selectedSpecialty && !institutionSpecialtyKeys(d).has(selectedSpecialty)) return false;
     return true;
   });
 }
