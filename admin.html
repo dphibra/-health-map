@@ -518,17 +518,22 @@ async function loadWstats(){
 }
 
 window.saveWstats = async function(){
-  for (const w of WILAYATS){
-    const pop = document.getElementById('f_wstat_pop_'+w.en).value;
-    const pharm = document.getElementById('f_wstat_pharm_'+w.en).value;
-    await setDoc(doc(db, 'wilayat_stats', w.en), {
-      wilayat_en: w.en,
-      wilayat_ar: w.ar,
-      population: pop !== '' ? parseInt(pop) : null,
-      pharmacy_count: pharm !== '' ? parseInt(pharm) : null
-    });
+  try{
+    for (const w of WILAYATS){
+      const pop = document.getElementById('f_wstat_pop_'+w.en).value;
+      const pharm = document.getElementById('f_wstat_pharm_'+w.en).value;
+      await setDoc(doc(db, 'wilayat_stats', w.en), {
+        wilayat_en: w.en,
+        wilayat_ar: w.ar,
+        population: pop !== '' ? parseInt(pop) : null,
+        pharmacy_count: pharm !== '' ? parseInt(pharm) : null
+      });
+    }
+    alert('تم حفظ بيانات الولايات بنجاح.');
+  }catch(e){
+    console.error(e);
+    alert('فشل الحفظ: ' + (e.code || e.message) + '\n\nإذا كان الخطأ permission-denied فحدّث قواعد Firestore لتشمل wilayat_stats (راجع README).');
   }
-  alert('تم حفظ بيانات الولايات بنجاح.');
 };
 
 // ---------- Data ----------

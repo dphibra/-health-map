@@ -287,11 +287,20 @@ const T = {
   }
 };
 
+let _dbPromise = null;
+async function getDb(){
+  if (!_dbPromise){
+    _dbPromise = (async () => {
+      const { initializeApp } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js');
+      const { getFirestore } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js');
+      return getFirestore(initializeApp(firebaseConfig));
+    })();
+  }
+  return _dbPromise;
+}
 async function loadFirestoreCollection(name){
-  const { initializeApp } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js');
-  const { getFirestore, collection, getDocs } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js');
-  const app = initializeApp(firebaseConfig);
-  const db = getFirestore(app);
+  const { collection, getDocs } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js');
+  const db = await getDb();
   const snap = await getDocs(collection(db, name));
   return snap.docs.map(d => ({ id: d.id, ...d.data() }));
 }
@@ -488,11 +497,19 @@ async function boot(){
   try{
     privateData = FIREBASE_CONFIGURED ? await loadFirestoreCollection('institutions') : await loadLocalData();
   }catch(e){ console.error(e); privateData = await loadLocalData(); }
-  try{ govData = FIREBASE_CONFIGURED ? await loadFirestoreCollection('gov_institutions') : []; }catch(e){ govData = []; }
+  try{ govData = FIREBASE_CONFIGURED ? await loadFirestoreCollection('gov_institutions') : []; }
+  catch(e){ console.error('gov_institutions load failed', e); govData = []; }
   try{
     const ws = FIREBASE_CONFIGURED ? await loadFirestoreCollection('wilayat_stats') : [];
     ws.forEach(w => { wstatsMap[w.id] = w; });
-  }catch(e){ wstatsMap = {}; }
+  }catch(e){
+    console.error('wilayat_stats load failed', e);
+    wstatsMap = {};
+    const warn = document.createElement('div');
+    warn.style.cssText = 'background:#FBEBD3;border:1px solid #E9C27E;color:#7A4E10;padding:10px 14px;border-radius:10px;font-size:13px;margin:12px 20px;max-width:1160px';
+    warn.textContent = 'تعذّر تحميل بيانات الولايات (السكان/الصيدليات): ' + (e && e.code ? e.code : e) + ' — تأكد من تحديث قواعد Firestore لتشمل wilayat_stats.';
+    document.querySelector('.page-tabs').insertAdjacentElement('afterend', warn);
+  }
   renderAll();
 }
 
